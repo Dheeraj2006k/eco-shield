@@ -1,6 +1,6 @@
 # API
 
-Base URL `http://localhost:8000`. Interactive docs at `/docs`. All data is simulated.
+Base URL `http://localhost:8000`. Interactive docs at `/docs`. All data is simulated. **All timestamps are epoch milliseconds.**
 
 **Auth:** `Authorization: Bearer <JWT>` (or the `iris_session` cookie). The web app issues the JWT at `POST /api/auth/login` (Next.js, port 3000) signed with `IRIS_AUTH_SECRET`; claims `sub`, `name`, `role`, `exp`. Missing/invalid → `401`; insufficient role → `403`.
 
@@ -8,10 +8,13 @@ Base URL `http://localhost:8000`. Interactive docs at `/docs`. All data is simul
 
 | Method | Path | Capability | Notes |
 |---|---|---|---|
-| GET | `/api/health` | public | status, auth flag, tick |
+| GET | `/api/health` | public | status, auth flag, tick, persistence |
+| GET | `/api/snapshot` | view | full engine state in the UI's shape, incl. telemetry history |
 | GET | `/api/nodes?hazard=` | view | list |
 | GET | `/api/nodes/{id}` | view | node + sensors (quality, freshness, reliability weight) |
 | GET | `/api/nodes/{id}/telemetry?metric=&limit=` | view | recent points (`limit` ≤ 240) |
+| POST | `/api/nodes/{id}/maintenance-mode` | service_nodes | body `{"on": true}`; excludes the node from fusion |
+| POST | `/api/notifications/read` | view | mark notifications read |
 | GET | `/api/alerts?status=&hazard=` | view | incidents |
 | GET | `/api/alerts/{id}` | view | incident + events + fusion evidence |
 | POST | `/api/alerts/{id}/acknowledge` | ack_alerts | 409 if not active |
@@ -55,8 +58,13 @@ Connect with `?token=<JWT>` (or the session cookie). Unauthenticated connections
 |---|---|
 | `/ws/events` | `{"type":"event","data":{"id","at","level","source","message"}}` per engine log entry |
 | `/ws/telemetry` | `{"type":"telemetry","data":[{"node_id","battery","signal","risk","quorum","values":{…},"simulated":true}]}` every ~1.5 s |
+| `/ws/state` | `{"type":"state","data":{…snapshot without history…,"history_tail":{node:{metric:{timestamp,value}}}}}` every ~1.5 s (used by the web UI) |
 | `/ws/alerts` | `{"type":"alerts","data":[Incident…]}` whenever the set of active incidents changes |
 
 ## MQTT (optional)
 
 `iris/telemetry/<node_id>` ← `{"sensor":"water_level","value":152.4}`. Enable with `IRIS_MQTT_ENABLED=true`; run `services/simulation/simulator.py` to publish simulated readings.
+
+## Web-app token endpoint
+
+`GET /api/backend-token` (Next.js, needs the session cookie) returns `{"token","expires_in":900}` — a 15-minute HS256 bearer token for calling this API from the browser. Note: WebSocket URLs carry the token as a query parameter, so it can appear in server access logs; it is short-lived, but a production deployment should move it to a subprotocol header or a one-time ticket.

@@ -38,10 +38,10 @@ export function authSecret(): string | null {
   return s && s.length >= 32 ? s : null;
 }
 
-export async function signSession(user: { sub: string; role: Role; name: string }, secret: string): Promise<string> {
+export async function signSession(user: { sub: string; role: Role; name: string }, secret: string, ttlSeconds = SESSION_TTL_SECONDS): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const header = b64url(enc.encode(JSON.stringify({ alg: 'HS256', typ: 'JWT' })));
-  const payload = b64url(enc.encode(JSON.stringify({ ...user, iat: now, exp: now + SESSION_TTL_SECONDS })));
+  const payload = b64url(enc.encode(JSON.stringify({ ...user, iat: now, exp: now + ttlSeconds })));
   const data = `${header}.${payload}`;
   const sig = new Uint8Array(await crypto.subtle.sign('HMAC', await hmacKey(secret), enc.encode(data)));
   return `${data}.${b64url(sig)}`;

@@ -6,8 +6,8 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
-  outputFileTracingRoot: root,
+  // `standalone` is for Docker / self-hosting. Vercel sets VERCEL=1 and produces its own output.
+  ...(process.env.VERCEL ? {} : { output: 'standalone', outputFileTracingRoot: root }),
   transpilePackages: ['@iris/ui', '@iris/config', '@iris/types'],
   experimental: { externalDir: true },
   poweredByHeader: false,

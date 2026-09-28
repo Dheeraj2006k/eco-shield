@@ -1,0 +1,19 @@
+# Render blueprint for the ECO-SHIELD API (FastAPI). The web app deploys separately on Vercel.
+# Render free instances sleep when idle and have an ephemeral disk: incidents/tickets persist across
+# restarts only if you attach a persistent disk (paid) — see docs/DEPLOYMENT.md.
+services:
+  - type: web
+    name: eco-shield-api
+    runtime: docker
+    dockerfilePath: ./infrastructure/docker/api.Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: IRIS_AUTH_SECRET      # MUST equal the value set in Vercel
+        sync: false
+      - key: IRIS_CORS_ORIGINS     # your Vercel URL, e.g. https://eco-shield.vercel.app
+        sync: false
+      - key: IRIS_AUTH_REQUIRED
+        value: "true"
+      - key: IRIS_DB_PATH
+        value: /tmp/iris_state.db  # use /data/iris_state.db with a persistent disk

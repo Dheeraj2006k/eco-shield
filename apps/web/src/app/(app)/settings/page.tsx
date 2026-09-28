@@ -8,6 +8,7 @@ import type { Capability } from '@iris/types';
 import { PageSkeleton, RequireCap } from '@/components/common/states';
 import { PageHeader, TableWrap, tdCls, thCls } from '@/components/common/widgets';
 import { useSession } from '@/lib/session';
+import { API_URL, remoteAvailable } from '@/lib/remote';
 import { useIris } from '@/lib/store';
 
 const CAPS: { c: Capability; label: string }[] = [
@@ -20,12 +21,17 @@ function Inner() {
   const paused = useIris((s) => s.paused);
   const setPaused = useIris((s) => s.setPaused);
   const user = useSession((s) => s.user);
+  const source = useIris((s) => s.source);
+  const setSource = useIris((s) => s.setSource);
+  const remoteStatus = useIris((s) => s.remoteStatus);
+  const remoteDetail = useIris((s) => s.remoteDetail);
   const [api, setApi] = useState<'checking' | 'up' | 'down'>('checking');
-  const url = process.env.NEXT_PUBLIC_API_URL;
+  const [persist, setPersist] = useState('');
+  const url = API_URL || undefined;
   useEffect(() => {
     if (!url) { setApi('down'); return; }
     const ctl = new AbortController();
-    fetch(`${url}/api/health`, { signal: ctl.signal }).then((r) => setApi(r.ok ? 'up' : 'down')).catch(() => setApi('down'));
+    fetch(`${url}/api/health`, { signal: ctl.signal }).then(async (r) => { setApi(r.ok ? 'up' : 'down'); if (r.ok) setPersist((await r.json()).persistence ?? ''); }).catch(() => setApi('down'));
     return () => ctl.abort();
   }, [url]);
   if (!d) return <PageSkeleton />;
@@ -37,13 +43,26 @@ function Inner() {
         <Card>
           <CardHeader><CardTitle>Data mode</CardTitle><Badge tone="maint">DEMO / SIMULATED</Badge></CardHeader>
           <CardContent className="space-y-3 text-sm text-slate-700">
-            <p>The web app runs a deterministic in-browser demo engine. No value shown anywhere in the UI is a live field measurement.</p>
-            <div className="flex items-center gap-2"><Button size="sm" variant="outline" onClick={() => setPaused(!paused)}>{paused ? 'Resume engine' : 'Pause engine'}</Button><span className="text-xs text-slate-500">Tick {d.tick}</span></div>
-            <div className="flex items-center gap-2 text-xs">
-              Backend API ({url ?? 'NEXT_PUBLIC_API_URL not set'}):{' '}
-              {api === 'checking' ? <Badge tone="off">Checking…</Badge> : api === 'up' ? <Badge tone="ok" icon={<CheckCircle2 className="h-3 w-3" aria-hidden />}>Reachable</Badge> : <Badge tone="off" icon={<XCircle className="h-3 w-3" aria-hidden />}>Not reachable</Badge>}
+            <p>All values are simulated. Choose where the simulation runs:</p>
+            <div role="radiogroup" aria-label="Data source" className="grid gap-2">
+              <label className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 ${source === 'local' ? 'border-navy-600 bg-navy-50' : 'border-slate-200'}`}>
+                <input type="radio" name="source" checked={source === 'local'} onChange={() => setSource('local')} className="mt-1" />
+                <span><b>Local demo engine</b> <span className="block text-xs text-slate-500">Runs in this browser. Works offline and on any static host. Resets on page reload.</span></span>
+              </label>
+              <label className={`flex items-start gap-2 rounded-lg border p-3 ${source === 'remote' ? 'border-navy-600 bg-navy-50' : 'border-slate-200'} ${remoteAvailable() ? 'cursor-pointer' : 'opacity-60'}`}>
+                <input type="radio" name="source" disabled={!remoteAvailable()} checked={source === 'remote'} onChange={() => setSource('remote')} className="mt-1" />
+                <span><b>Backend API (FastAPI)</b> <span className="block text-xs text-slate-500">{remoteAvailable() ? 'Shared state over REST + WebSocket; incidents and tickets are persisted by the server.' : 'Set NEXT_PUBLIC_API_URL to enable.'}</span></span>
+              </label>
             </div>
-            <p className="text-xs text-slate-500">The FastAPI backend (apps/api) exposes the same domain over REST and WebSocket. The UI does not depend on it to run in demo mode.</p>
+            {source === 'remote' && (
+              <p className="text-xs">Connection: {remoteStatus === 'live' ? <Badge tone="ok" icon={<CheckCircle2 className="h-3 w-3" aria-hidden />}>Live</Badge> : remoteStatus === 'connecting' ? <Badge tone="off">Connecting…</Badge> : <Badge tone="high" icon={<XCircle className="h-3 w-3" aria-hidden />}>Error</Badge>} {remoteDetail && <span className="text-slate-500">{remoteDetail}</span>}</p>
+            )}
+            <div className="flex items-center gap-2"><Button size="sm" variant="outline" disabled={source === 'remote'} onClick={() => setPaused(!paused)}>{paused ? 'Resume engine' : 'Pause engine'}</Button><span className="text-xs text-slate-500">Tick {d.tick}</span></div>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              Backend ({url ?? 'not configured'}):{' '}
+              {api === 'checking' ? <Badge tone="off">Checking…</Badge> : api === 'up' ? <Badge tone="ok" icon={<CheckCircle2 className="h-3 w-3" aria-hidden />}>Reachable</Badge> : <Badge tone="off" icon={<XCircle className="h-3 w-3" aria-hidden />}>Not reachable</Badge>}
+              {persist && <span className="text-slate-500">persistence: {persist}</span>}
+            </div>
           </CardContent>
         </Card>
         <Card>

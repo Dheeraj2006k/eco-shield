@@ -205,6 +205,8 @@ function UserMenu() {
 function Topbar({ onMenu }: { onMenu: () => void }) {
   const data = useIris((s) => s.data);
   const paused = useIris((s) => s.paused);
+  const source = useIris((s) => s.source);
+  const remoteStatus = useIris((s) => s.remoteStatus);
   const [clock, setClock] = useState('');
   useEffect(() => {
     const t = setInterval(() => setClock(fmtClock(Date.now())), 1000);
@@ -223,9 +225,10 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
         <span className="hidden text-[11px] font-semibold uppercase tracking-wide text-slate-500 xl:inline">System status</span>
         {data ? <SystemBadge health={data.system.health} /> : <Badge tone="off">Loading</Badge>}
         <Link href="/demo" title="All data is simulated. Open Demo Control." className="hidden md:inline-flex">
-          <Badge tone="maint" className="cursor-pointer">Demo mode · simulated data</Badge>
+          <Badge tone="maint" className="cursor-pointer">{source === 'remote' ? 'Backend API · simulated data' : 'Demo mode · simulated data'}</Badge>
         </Link>
-        {paused && <Badge tone="warn">Paused</Badge>}
+        {paused && source === 'local' && <Badge tone="warn">Paused</Badge>}
+        {source === 'remote' && <Badge tone={remoteStatus === 'live' ? 'ok' : remoteStatus === 'connecting' ? 'off' : 'high'}>{remoteStatus === 'live' ? 'API live' : remoteStatus === 'connecting' ? 'API connecting' : 'API offline'}</Badge>}
       </div>
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
         <span className="hidden text-xs text-slate-500 xl:block">
@@ -280,6 +283,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const actionError = useIris((s) => s.actionError);
+  const clearActionError = useIris((s) => s.clearActionError);
+  const source = useIris((s) => s.source);
+  const remoteStatus = useIris((s) => s.remoteStatus);
+  const remoteDetail = useIris((s) => s.remoteDetail);
   const critical = data?.incidents.filter((i) => i.status === 'ACTIVE' && i.severity === 'CRITICAL').length ?? 0;
 
   return (
@@ -320,6 +328,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className={cn('transition-[padding] lg:pl-60', collapsed && 'lg:pl-16')}>
         <Topbar onMenu={() => setDrawer(true)} />
         <OfflineBanner />
+        {source === 'remote' && remoteStatus === 'error' && (
+          <div role="alert" className="flex items-center gap-2 border-b border-orange-200 bg-orange-50 px-4 py-1.5 text-xs text-orange-800">Backend API unreachable{remoteDetail ? ` — ${remoteDetail}` : ''}. Retrying… Showing the last received state.
+            <Link href="/settings" className="ml-auto underline">Switch to local demo engine</Link></div>
+        )}
+        {actionError && (
+          <div role="alert" className="flex items-center gap-2 border-b border-red-200 bg-red-50 px-4 py-1.5 text-xs text-red-800">{actionError}
+            <button onClick={clearActionError} className="ml-auto underline">Dismiss</button></div>
+        )}
         {data && data.incidents.some((i) => i.status === 'ACTIVE') && (
           <Link
             href="/alerts"

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 import time
 from contextlib import asynccontextmanager
@@ -11,25 +12,32 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-from .engine import TICK_S, Engine
+from .engine import TICK_S, TH, Engine
 from .models import AckRequest, Incident, Maintenance, Node, Telemetry, TicketCreate
-from .security import User, auth_required, current_user, decode, require
+from .security import User, auth_required, decode, require
+from .storage import Storage, persist, restore
 
+log = logging.getLogger("iris.api")
 engine = Engine()
+store: Storage | None = None
 
 
 class Hub:
     """Fan-out of engine updates to WebSocket subscribers per channel."""
 
     def __init__(self) -> None:
-        self.channels: dict[str, set[WebSocket]] = {"events": set(), "telemetry": set(), "alerts": set()}
+        self.channels: dict[str, set[WebSocket]] = {"events": set(), "telemetry": set(), "alerts": set(), "state": set()}
 
-    async def publish(self, channel: str, payload: dict) -> None:
+    async def publish(self, channel: str, payload: dict | str) -> None:
+        if not self.channels[channel]:
+            return
+        text = payload if isinstance(payload, str) else json.dumps(payload, default=str)
         dead = []
         for ws in list(self.channels[channel]):
             try:
-                await ws.send_text(json.dumps(payload, default=str))
+                await ws.send_text(text)
             except Exception:
                 dead.append(ws)
         for ws in dead:
@@ -46,8 +54,8 @@ async def loop() -> None:
         engine.tick()
         with engine.lock:
             new_logs, engine.new_log = engine.new_log, []
-            tele = [{"node_id": n["id"], "timestamp": time.time(), "battery": round(n["battery"], 2), "signal": round(n["signal"], 1), "risk": n["risk"], "quorum": n["quorum"], "values": {t: round(s["value"], 2) for t, s in n["sensors"].items()}, "simulated": True} for n in engine.nodes.values()]
-            alerts = [engine.incident_view(i) for i in engine.incidents if i["status"] != "RESOLVED"]
+            tele = [{"node_id": n["id"], "timestamp": engine.now, "battery": round(n["battery"], 2), "signal": round(n["signal"], 1), "risk": n["risk"], "quorum": n["quorum"], "values": {t: round(s["value"], 2) for t, s in n["sensors"].items()}, "simulated": True} for n in engine.nodes.values()]
+            alerts = [i for i in engine.incidents if i["status"] != "RESOLVED"]
         for e in reversed(new_logs):
             await hub.publish("events", {"type": "event", "data": e})
         await hub.publish("telemetry", {"type": "telemetry", "data": tele})
@@ -55,10 +63,23 @@ async def loop() -> None:
         if snap != last_alerts:
             last_alerts = snap
             await hub.publish("alerts", {"type": "alerts", "data": alerts})
+        if hub.channels["state"]:
+            await hub.publish("state", {"type": "state", "data": engine.snapshot(with_history=False)})
+        if store:
+            try:
+                await asyncio.get_running_loop().run_in_executor(None, persist, engine, store)
+            except Exception:  # persistence must never stop the engine
+                log.exception("persist failed")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global store
+    path = os.environ.get("IRIS_DB_PATH", "iris_state.db")
+    if path != ":memory:":
+        store = Storage(path)
+        counts = restore(engine, store)
+        log.warning("restored from %s: %s", path, counts)
     tasks = [asyncio.create_task(loop())]
     if os.environ.get("IRIS_MQTT_ENABLED", "false").lower() == "true":
         from .mqtt_bridge import run_bridge
@@ -67,9 +88,12 @@ async def lifespan(app: FastAPI):
     yield
     for t in tasks:
         t.cancel()
+    if store:
+        persist(engine, store)
+        store.close()
 
 
-app = FastAPI(title="ECO-SHIELD API", version="1.0.0", description="Demo API — all telemetry is simulated.", lifespan=lifespan)
+app = FastAPI(title="ECO-SHIELD API", version="1.1.0", description="Demo API — all telemetry is simulated.", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in os.environ.get("IRIS_CORS_ORIGINS", "http://localhost:3000").split(",") if o.strip()],
@@ -81,7 +105,14 @@ app.add_middleware(
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "service": "eco-shield-api", "data": "SIMULATED", "auth_required": auth_required(), "tick": engine.tick_n}
+    return {"status": "ok", "service": "eco-shield-api", "data": "SIMULATED", "auth_required": auth_required(), "tick": engine.tick_n, "persistence": store.path if store else "off"}
+
+
+# ------------------------------------------------------------------ state for the web UI (remote mode)
+@app.get("/api/snapshot")
+def snapshot(_: User = Depends(require("view"))):
+    """Full engine state in the exact shape the web UI consumes (including telemetry history)."""
+    return engine.snapshot(with_history=True)
 
 
 # ------------------------------------------------------------------ read
@@ -107,9 +138,18 @@ def node_telemetry(node_id: str, metric: str = Query("water_level", max_length=2
         if not n or metric not in n["sensors"]:
             raise HTTPException(404, "Node or metric not found")
         s = n["sensors"][metric]
-        from .engine import TH
-
         return [Telemetry(timestamp=t, node_id=node_id, sensor_id=s["id"], value=v, unit=TH[metric][3], quality=s["quality"], battery=n["battery"], signal=n["signal"]) for t, v in list(engine.history[node_id][metric])[-limit:]]
+
+
+class MaintenanceModeBody(BaseModel):
+    on: bool
+
+
+@app.post("/api/nodes/{node_id}/maintenance-mode")
+def maintenance_mode(node_id: str, body: MaintenanceModeBody, user: User = Depends(require("service_nodes"))):
+    if not engine.set_maintenance_mode(node_id, body.on, user.name):
+        raise HTTPException(404, "Node not found")
+    return {"ok": True, "node": node_id, "maintenance_mode": body.on}
 
 
 @app.get("/api/alerts", response_model=list[Incident])
@@ -125,7 +165,7 @@ def get_alert(incident_id: str, _: User = Depends(require("view"))):
         if not i:
             raise HTTPException(404, "Incident not found")
         events = [e for e in engine.events if e["id"] in i["event_ids"]]
-        return {"incident": engine.incident_view(i), "events": events, "fusion": engine.fusion.get(i["node_ids"][0])}
+        return {"incident": engine.incident_view(i), "events": events, "fusion": i["fusion"]}
 
 
 @app.post("/api/alerts/{incident_id}/acknowledge")
@@ -133,6 +173,12 @@ def acknowledge(incident_id: str, body: AckRequest | None = None, user: User = D
     if not engine.acknowledge(incident_id, user.name):
         raise HTTPException(409, "Incident not found or not active")
     return {"ok": True, "incident": incident_id, "acknowledged_by": user.name}
+
+
+@app.post("/api/notifications/read")
+def notifications_read(_: User = Depends(require("view"))):
+    engine.mark_notifications_read()
+    return {"ok": True}
 
 
 @app.get("/api/analytics")
@@ -259,3 +305,9 @@ async def ws_telemetry(ws: WebSocket, token: str | None = None):
 @app.websocket("/ws/alerts")
 async def ws_alerts(ws: WebSocket, token: str | None = None):
     await _ws("alerts", ws, token)
+
+
+@app.websocket("/ws/state")
+async def ws_state(ws: WebSocket, token: str | None = None):
+    """Full-state stream (without history; only the newest telemetry point per metric) for the web UI."""
+    await _ws("state", ws, token)

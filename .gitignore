@@ -19,3 +19,5 @@ next-env.d.ts
 services/ml/artifacts/*.joblib
 services/ml/artifacts/*.pt
 .claude/
+apps/web/scripts/.snapshot.json
+*.db
