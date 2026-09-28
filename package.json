@@ -1,0 +1,20 @@
+{
+  "name": "iris",
+  "version": "1.0.0",
+  "private": true,
+  "description": "IRIS — Intelligent Real-time Environmental Intelligence & Sensing",
+  "workspaces": [
+    "apps/web",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @iris/web",
+    "build": "npm run build -w @iris/web",
+    "start": "npm run start -w @iris/web",
+    "typecheck": "npm run typecheck -w @iris/web",
+    "gen-env": "node scripts/gen-env.mjs"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  }
+}

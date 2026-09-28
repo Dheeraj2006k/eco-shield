@@ -1,0 +1,7 @@
+# topic ACL — devices may only publish telemetry; the API may subscribe.
+user iris-device
+topic write iris/telemetry/#
+
+user iris-api
+topic read iris/telemetry/#
+topic write iris/alerts/#

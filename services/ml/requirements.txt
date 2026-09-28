@@ -1,0 +1,8 @@
+numpy>=1.26
+pandas>=2.1
+scikit-learn>=1.4
+xgboost>=2.0
+joblib>=1.3
+# optional — GRU temporal-escalation model and vision models
+# torch>=2.2
+# opencv-python-headless>=4.9

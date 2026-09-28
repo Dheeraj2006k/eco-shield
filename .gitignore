@@ -1,0 +1,21 @@
+node_modules/
+.next/
+out/
+.env
+.env.local
+.env.*.local
+apps/api/.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+.DS_Store
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# ML binaries (regenerate with services/ml/train.py); registry.json is kept
+services/ml/artifacts/*.joblib
+services/ml/artifacts/*.pt
+.claude/

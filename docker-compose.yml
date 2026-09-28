@@ -1,0 +1,66 @@
+# ECO-SHIELD local stack.  Usage:  cp .env.example .env  (fill every value)  &&  docker compose up --build
+# Secrets are read from .env (git-ignored). Compose refuses to start if a required value is missing.
+
+services:
+  web:
+    build: { context: ., dockerfile: infrastructure/docker/web.Dockerfile }
+    ports: ["3000:3000"]
+    environment:
+      IRIS_AUTH_SECRET: ${IRIS_AUTH_SECRET:?set IRIS_AUTH_SECRET in .env}
+      IRIS_USERS: ${IRIS_USERS:?set IRIS_USERS in .env}
+      IRIS_INSECURE_COOKIES: ${IRIS_INSECURE_COOKIES:-1}   # 1 only for plain-http local use; remove behind TLS
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on: [api]
+
+  api:
+    build: { context: ., dockerfile: infrastructure/docker/api.Dockerfile }
+    ports: ["8000:8000"]
+    environment:
+      IRIS_AUTH_SECRET: ${IRIS_AUTH_SECRET:?set IRIS_AUTH_SECRET in .env}
+      IRIS_AUTH_REQUIRED: "true"
+      IRIS_CORS_ORIGINS: ${IRIS_CORS_ORIGINS:-http://localhost:3000}
+      IRIS_MQTT_ENABLED: ${IRIS_MQTT_ENABLED:-false}
+      IRIS_MQTT_HOST: mqtt
+      IRIS_MQTT_USER: iris-api
+      IRIS_MQTT_PASSWORD: ${IRIS_MQTT_PASSWORD:-}
+      DATABASE_URL: postgresql://iris:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/iris
+      REDIS_URL: redis://cache:6379/0
+    depends_on: [db, cache, mqtt]
+
+  db:
+    image: timescale/timescaledb-ha:pg16          # PostgreSQL 16 + TimescaleDB + PostGIS
+    environment:
+      POSTGRES_USER: iris
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: iris
+    volumes:
+      - dbdata:/home/postgres/pgdata/data
+      - ./infrastructure/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U iris"], interval: 10s, retries: 5 }
+
+  cache:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+  mqtt:
+    image: eclipse-mosquitto:2
+    ports: ["1883:1883"]
+    volumes:
+      - ./infrastructure/mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./infrastructure/mqtt/acl:/mosquitto/config/acl:ro
+      - ./infrastructure/mqtt/passwd:/mosquitto/config/passwd:ro   # create locally — see infrastructure/mqtt/README.md
+      - mqttdata:/mosquitto/data
+
+  storage:                                          # S3-compatible object storage for event snapshots / reports
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD in .env}
+    ports: ["9001:9001"]
+    volumes: [objdata:/data]
+
+volumes:
+  dbdata:
+  mqttdata:
+  objdata:
