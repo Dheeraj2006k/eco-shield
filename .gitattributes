@@ -1,0 +1,11 @@
+# Ensure binary formats are never subjected to CRLF conversion, regardless of core.autocrlf.
+*.pdf binary
+*.docx binary
+*.doc binary
+*.db binary
+*.joblib binary
+*.pt binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary

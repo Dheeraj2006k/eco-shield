@@ -1,0 +1,2158 @@
+{
+ "front": [
+  {
+   "type": "para",
+   "text": "ECOSHIELD"
+  },
+  {
+   "type": "para",
+   "text": "Intelligence at the Edge of Every Disaster"
+  },
+  {
+   "type": "para",
+   "text": "A Resilient, AI-Powered Environmental Intelligence Network"
+  },
+  {
+   "type": "para",
+   "text": "Complete Project Document — Architecture, Hardware, AI/ML, Deployment and Feasibility"
+  },
+  {
+   "type": "para",
+   "text": "Smart India Hackathon 2026"
+  },
+  {
+   "type": "para",
+   "text": "Problem Statement 26178 — Qualcomm Inc."
+  },
+  {
+   "type": "para",
+   "text": "Category: Hardware  |  Theme: Disaster Management"
+  },
+  {
+   "type": "para",
+   "text": "Team Name: CODE SMITHS"
+  },
+  {
+   "type": "para",
+   "text": "Team Members: Kasula Kiran, K.S.V.Dheeraj Kumar, B.Ram Charan Reddy, M.Divya Tejswi, Ch.Jishnu Chowdary, K.Sai Sahitya Kannam"
+  },
+  {
+   "type": "para",
+   "text": "September 2026"
+  }
+ ],
+ "sections": [
+  {
+   "id": "document-status-decision-legend",
+   "title": "Document Status & Decision Legend",
+   "blocks": [
+    {
+     "type": "table",
+     "header": [
+      "Label",
+      "Meaning"
+     ],
+     "rows": [
+      [
+       "LOCKED",
+       "Agreed architecture, feature, or design principle finalized by the team."
+      ],
+      [
+       "BENCHMARK-PENDING",
+       "Approach is fixed; exact model/component variant is selected after measured testing."
+      ],
+      [
+       "ADVANCED",
+       "Part of the target architecture; not a dependency of the core working prototype."
+      ],
+      [
+       "ROADMAP",
+       "Production-scale capability for post-hackathon deployment; not claimed as working today."
+      ],
+      [
+       "VERIFY BEFORE CLAIM",
+       "Value, cost, availability, or performance figure must be re-checked before stating as fact."
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "1-executive-summary",
+   "title": "1. Executive Summary",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "India faces recurring, high-impact environmental hazards: urban and river floods across Assam, Bihar, Kerala and Maharashtra; forest fires across Uttarakhand, Himachal Pradesh and central India; hazardous air pollution in major cities; landslides in hill states; and industrial gas/chemical incidents. Government agencies such as NDMA, IMD and ISRO already run environmental monitoring and early-warning systems, but these are largely centralized and coarse-grained. They lack dense, hyperlocal, real-time, offline-capable sensing at the exact point of risk."
+    },
+    {
+     "type": "para",
+     "text": "EcoShield is a distributed, AI-powered Environmental Intelligence Network built around a Universal Node Platform with field-replaceable, hazard-specific sensor pods. Each node performs on-device (edge) AI to detect anomalies locally. Nodes connect over LoRaWAN to an edge gateway, which performs advanced multi-sensor fusion, camera-based vision AI, and risk assessment — continuing to operate even when internet connectivity fails. Only critical alerts, summaries and risk assessments are transmitted onward to cloud infrastructure and, ultimately, to regional control centres and national dissemination systems such as NDMA's SACHET and C-DOT's CAP-based alerting."
+    },
+    {
+     "type": "para",
+     "text": "Core Design Pipeline: Sense → Verify → Fuse → Predict → Decide → Alert → Act → Learn"
+    },
+    {
+     "type": "para",
+     "text": "The system is explicitly designed to complement — not replace — India's existing monitoring and dissemination ecosystem (IMD, CWC, FSI, CPCB, ISRO, SACHET/C-DOT). EcoShield's contribution is the missing layer: continuous, distributed, evidence-fused, offline-resilient local sensing and decision-making, feeding validated intelligence upward into systems that already reach the public at national scale."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "1.1 What Makes EcoShield Different"
+    },
+    {
+     "type": "list",
+     "items": [
+      "A single Universal Node hardware core that is reconfigured for any hazard by swapping a sensor pod — not five different products.",
+      "Automatic pod identification and AI-profile loading — no firmware reflash needed when a pod is changed.",
+      "Risk (severity) and Confidence are computed and reported as two separate values, not collapsed into one number.",
+      "Quorum-Gated Alerting: a public CRITICAL alert requires corroboration from at least two independent evidence sources, which also functions as the system's core anti-spoofing defence.",
+      "Trust-weighted neighbour recalibration, grounded in published wireless-sensor-network research, so a drifting sensor is corrected rather than simply ignored.",
+      "A full offline-first emergency path — local detection, local voice/siren alerting, and store-and-forward buffering — that keeps working with zero internet connectivity.",
+      "A five-layer security spine (signed identity, encrypted transport, physical-plausibility checks, quorum-gated fusion, tamper/audit logging) defending against cloned nodes, replay attacks and spoofed readings."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "2-problem-statement-and-background",
+   "title": "2. Problem Statement and Background",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "2.1 Official Problem Statement"
+    },
+    {
+     "type": "para",
+     "text": "Problem Statement ID: 26178  |  Sponsor: Qualcomm Inc.  |  Category: Hardware  |  Theme: Disaster Management."
+    },
+    {
+     "type": "para",
+     "text": "Official title: “A resilient, AI-powered environmental monitoring network that provides early detection, localized intelligence, and actionable alerts for floods, forest fires, pollution events, and other environmental hazards common in India, enabling authorities and communities to shift from reactive disaster response to proactive risk prevention.”"
+    },
+    {
+     "type": "para",
+     "text": "The description calls for a distributed Environmental Intelligence Network deployable across cities, rivers, forests, industrial zones and vulnerable communities, using on-device AI, multi-hazard early warning, regional risk mapping, community/authority notification, a cloud-edge hybrid architecture, and scalable, cost-effective deployment."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "2.2 Hazards Addressed"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Urban flooding and river/flash floods — Assam, Bihar, Kerala, Maharashtra and other flood-prone states.",
+      "Forest and vegetation fires — Uttarakhand, Himachal Pradesh, and central Indian forest belts.",
+      "Hazardous air pollution — major urban centres.",
+      "Landslides and terrain instability — hill and slope regions.",
+      "Industrial gas leaks and chemical incidents — industrial zones and plant perimeters.",
+      "Water quality degradation and extreme heat/weather — as advanced deployment extensions."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "2.3 Mandatory Requirements Mapped to Our Response"
+    },
+    {
+     "type": "table",
+     "header": [
+      "PS Requirement",
+      "EcoShield Response"
+     ],
+     "rows": [
+      [
+       "Distributed smart sensor nodes",
+       "Universal Node core + modular hazard-specific sensor pods (Hydro, Fire/Air, Terrain, Water Quality, Weather)"
+      ],
+      [
+       "Solar-powered, low-maintenance",
+       "Solar + LiFePO4 battery, INA219 power telemetry, field-replaceable pods instead of full-node disposal"
+      ],
+      [
+       "On-device AI, no continuous cloud dependency",
+       "AI-0 node intelligence + AI-1 edge gateway; the full emergency path works fully offline"
+      ],
+      [
+       "Multi-hazard early warning",
+       "Shared event schema and hazard-specific models for flood, fire, pollution, landslide and water quality"
+      ],
+      [
+       "Regional risk mapping",
+       "GIS dashboard with hotspots, trends, and population/infrastructure impact overlays"
+      ],
+      [
+       "Community and authority notification",
+       "Dashboard, SMS, multilingual voice, IVR, local siren; severity and confidence shown separately"
+      ],
+      [
+       "Cloud and edge hybrid architecture",
+       "Three-tier AI: Node (AI-0) → Edge Gateway (AI-1) → Cloud (AI-2)"
+      ],
+      [
+       "Scalable, cost-effective deployment",
+       "Universal core + swappable pods, gateway zones, infrastructure-piggyback siting"
+      ],
+      [
+       "IoT protocol support",
+       "LoRaWAN (IN865) node-to-gateway; 4G/5G/Wi-Fi/Ethernet gateway-to-cloud"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "3-existing-ecosystem-and-the-genuine-gap",
+   "title": "3. Existing Ecosystem and the Genuine Gap",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "EcoShield is designed to complement, not replace, India's existing monitoring and alerting infrastructure. The genuine gap it targets is the combination of distributed local sensing, on/near-device intelligence, sensor-health awareness, multi-sensor and neighbour evidence fusion, offline resilience, and actionable geo-targeted risk intelligence — not the absence of any single government system."
+    },
+    {
+     "type": "table",
+     "header": [
+      "System",
+      "What It Contributes",
+      "EcoShield's Relationship"
+     ],
+     "rows": [
+      [
+       "CWC / IMD flood warning",
+       "Hydrometeorological observations, forecasts, institutional flood warning",
+       "Complements with localized field sensing, rate-of-rise detection and edge decisions"
+      ],
+      [
+       "FSI / satellite fire alerts (MODIS/VIIRS)",
+       "Large-area fire hotspot detection, roughly 3-hour latency between satellite passes",
+       "Complements with ground-level smoke/PM/temperature evidence and faster local verification"
+      ],
+      [
+       "CPCB air-quality monitoring",
+       "Continuous, reference-grade ambient air-quality data at fixed stations",
+       "Complements with distributed, low-cost, denser local observations"
+      ],
+      [
+       "ISRO / remote sensing",
+       "Regional and spatial environmental context",
+       "Used as optional external evidence, not the sole real-time input"
+      ],
+      [
+       "NDMA SACHET / C-DOT CAP",
+       "Geo-targeted, multi-channel dissemination of authorized disaster alerts (SMS, cell broadcast, apps, TV, radio)",
+       "EcoShield feeds validated, CAP-compatible alerts into this system rather than rebuilding national dissemination"
+      ]
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "3.1 Case Study: Kerala 2018 Floods and CAP Dissemination"
+    },
+    {
+     "type": "para",
+     "text": "Kerala's official Orange Book of Disaster Management records that C-DOT's Common Alerting Protocol-compliant platform, integrated with telecom providers for geo-targeted SMS, was used to send up to 11.4 lakh precautionary messages during the 2018 floods. This is strong evidence that the dissemination problem can be solved operationally at scale — but it is evidence of dissemination capability, not of field-level hazard detection. EcoShield is designed to feed richer, earlier, evidence-backed alert events into exactly this kind of dissemination infrastructure."
+    },
+    {
+     "type": "para",
+     "text": "Note: Quantitative figures such as the 11.4 lakh message count are historical (2018) and should be labelled with their time period; C-DOT's platform has since evolved."
+    }
+   ]
+  },
+  {
+   "id": "4-solution-overview-and-design-principles",
+   "title": "4. Solution Overview and Design Principles",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "4.1 Vision"
+    },
+    {
+     "type": "para",
+     "text": "EcoShield is an evidence-fused, edge-first, resilient environmental intelligence platform. It senses multiple hazards, verifies sensor reliability, fuses local and external evidence, detects and assesses risk at the edge, and delivers resilient, multi-channel alerts even when cloud connectivity is unavailable."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "4.2 Design Principles (Locked)"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Local intelligence first — critical decisions never depend on continuous cloud connectivity.",
+      "Evidence over single-sensor triggers — one abnormal reading never automatically becomes a public disaster alert.",
+      "Risk and confidence are treated as separate dimensions, not one blended score.",
+      "Sensor health is itself a form of environmental intelligence.",
+      "One common node platform serves every deployment environment through modular sensor pods and AI profiles.",
+      "The network complements existing government and institutional systems rather than claiming to replace them.",
+      "Advanced features are part of the target architecture, but all prototype claims are limited to what is actually built and measured.",
+      "Human authorities remain responsible for final safety decisions and operational actions — the system is decision support, not autonomous control."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "5-system-architecture",
+   "title": "5. System Architecture",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "5.1 Three-Tier Structure"
+    },
+    {
+     "type": "table",
+     "header": [
+      "Layer",
+      "Primary Role",
+      "Example Hardware"
+     ],
+     "rows": [
+      [
+       "Sensor Node",
+       "Acquire data, local filtering, health checks, local buffering, LoRaWAN transmission",
+       "ESP32-S3-class MCU + modular sensor pod"
+      ],
+      [
+       "Edge Gateway",
+       "Multi-node fusion, advanced AI, camera vision, risk engine, local alerts, backhaul",
+       "Raspberry Pi (prototype) / Qualcomm Dragonwing IQ-8275 (production target)"
+      ],
+      [
+       "Cloud / Regional Control",
+       "Historical analytics, GIS, model training and lifecycle, fleet management",
+       "Backend API + time-series database + GIS dashboard"
+      ]
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "5.2 End-to-End Data Flow"
+    },
+    {
+     "type": "para",
+     "text": "Node → LoRaWAN → Edge Gateway → 4G/5G/Wi-Fi/Ethernet → Cloud/Control Centre → CAP/SACHET → Public and Authority Channels."
+    },
+    {
+     "type": "list",
+     "items": [
+      "Normal operation: nodes send compact telemetry summaries; the gateway fuses and forwards them; the cloud updates GIS and analytics.",
+      "Internet unavailable: the gateway continues local inference, risk assessment and local alerting; events are buffered.",
+      "Gateway unavailable: the node keeps measuring, applies its own local safety logic, stores events, and retries/synchronizes once the gateway returns.",
+      "Critical extreme event: a deterministic safety override can bypass normal evidence-gathering delay when a reading is far beyond any plausible danger threshold."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "5.3 System Blueprint"
+    },
+    {
+     "type": "para",
+     "text": "EXTERNAL INTELLIGENCE (Weather / Satellite / Existing Systems) feeds into the Node layer alongside direct sensing. Universal Nodes (sensor pods, sensor health, local baseline, trend/anomaly detection, safety rules, buffering) send data over LoRaWAN to the Edge Gateway (multi-node fusion, advanced ML, camera/thermal AI, risk + confidence engine, local alerts, offline operation). The gateway forwards over 4G/5G/Wi-Fi to the Cloud/Regional Control Centre (GIS, history, training, forecasting, digital twin, fleet and model registry), which in turn feeds the CAP/SACHET alert ecosystem (SMS, voice, cell broadcast, app, radio, TV, web)."
+    }
+   ]
+  },
+  {
+   "id": "6-hardware-design-student-buildable-prototype",
+   "title": "6. Hardware Design (Student-Buildable Prototype)",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "The hardware design deliberately favours widely available, inexpensive, well-documented components so that a student team can source, wire and validate a full working prototype without specialised equipment. Every component listed below is commercially available in India at the time of writing; exact prices should be re-verified before purchase."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "6.1 Universal Core (built once, shared by every node)"
+    },
+    {
+     "type": "table",
+     "header": [
+      "Component",
+      "Part",
+      "Approx. Cost (₹)",
+      "Role"
+     ],
+     "rows": [
+      [
+       "MCU",
+       "ESP32-S3 (WROOM-1, N16R8)",
+       "700 – 900",
+       "Dual-core 240MHz, 512KB SRAM, Wi-Fi/BLE; runs filtering and TinyML"
+      ],
+      [
+       "LoRaWAN radio",
+       "Seeed Wio-E5 Dev Kit",
+       "3,500 – 3,800",
+       "Pre-certified IN865 module, AT-command firmware"
+      ],
+      [
+       "Power monitor",
+       "TI INA219 breakout",
+       "150 – 250",
+       "I2C battery/solar current-voltage-power telemetry"
+      ],
+      [
+       "Battery",
+       "LiFePO4 cell, ~6Ah (e.g. IFR26650)",
+       "500 – 700",
+       "Safer than Li-ion outdoors, better heat tolerance"
+      ],
+      [
+       "Solar panel",
+       "6V/9V, 5–10W panel",
+       "400 – 700",
+       "Trickle-charges the battery in typical Indian sun"
+      ],
+      [
+       "Charge controller",
+       "TP5000 or equivalent LiFePO4-compatible module",
+       "150 – 300",
+       "Handles charging without custom analog design"
+      ],
+      [
+       "Enclosure",
+       "IP65 ABS junction box (150x110x70mm)",
+       "250 – 400",
+       "Weatherproof housing, field-drillable cable glands"
+      ]
+     ]
+    },
+    {
+     "type": "para",
+     "text": "Universal Core subtotal: approximately ₹6,000 – 7,500"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "6.2 Sensor Pod — Hydro / Flood"
+    },
+    {
+     "type": "list",
+     "items": [
+      "DFRobot A02YYUW — waterproof ultrasonic water-level sensor, IP67, 3–450cm range, UART (₹1,600–1,800)",
+      "DFRobot SEN0575 — tipping-bucket rainfall sensor (₹1,200–2,000)",
+      "DHT22 / SHT31 — temperature and humidity sensor (₹250–500)"
+     ]
+    },
+    {
+     "type": "para",
+     "text": "Hydro Pod subtotal: approximately ₹3,000 – 4,300  |  Full Hydro Node (Core + Pod): ₹9,000 – 11,800"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "6.3 Sensor Pod — Fire / Air"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Sensirion SPS30 — PM1/PM2.5/PM4/PM10 particulate sensor, laser scattering, I2C/UART (₹3,800–4,200)",
+      "MQ-2 — smoke / combustible gas sensor, analog output (₹150–300)",
+      "DHT22 / SHT31 — temperature and humidity sensor (₹250–500)",
+      "MLX90640 32x24 thermal array — optional, for visual fire confirmation (₹3,000–4,500)"
+     ]
+    },
+    {
+     "type": "para",
+     "text": "Fire/Air Pod subtotal: approximately ₹4,200 – 5,000 (excluding thermal)  |  Full Fire/Air Node (Core + Pod): ₹10,200 – 12,500"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "6.4 Terrain / Landslide Pod (Advanced Extension)"
+    },
+    {
+     "type": "list",
+     "items": [
+      "LSM6DSOX / BMI270 IMU — tilt and vibration sensing (prototype); ADXL355 for production-grade precision",
+      "Capacitive or RS-485 soil-moisture probe",
+      "Shared temperature/humidity sensor from the same DHT22/SHT31 family"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "6.5 Edge Gateway"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Raspberry Pi 4 or 5 (4GB sufficient) — ₹5,000–8,000 — runs Python/MQTT/fusion logic",
+      "USB LoRa receiver (a second Wio-E5 in USB-serial mode, or an RFM95-based USB dongle) — ₹2,000–3,000",
+      "Raspberry Pi Camera Module 3 — optional, ₹2,500–3,000, for the camera-AI demonstration"
+     ]
+    },
+    {
+     "type": "para",
+     "text": "Gateway total: approximately ₹7,000 – 14,000 depending on camera inclusion"
+    },
+    {
+     "type": "para",
+     "text": "Note: Production target for the edge gateway is the Qualcomm Dragonwing IQ-8275 (20–40 dense INT8 TOPS, heterogeneous CPU/GPU/NPU/MCU, MIPI CSI, industrial temperature rating). The Raspberry Pi is presented explicitly as a prototype/fallback platform, not as equivalent hardware."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "6.6 Cost Summary and Build Recommendation"
+    },
+    {
+     "type": "list",
+     "items": [
+      "One Universal Core + both pods (proves live modularity): approximately ₹13,200 – 16,800",
+      "Full demoable prototype including gateway: approximately ₹20,000 – 31,000"
+     ]
+    },
+    {
+     "type": "para",
+     "text": "Recommendation: build one Universal Core with both sensor pods and physically swap the pod during the live demonstration, rather than building two entirely separate nodes. This is both cheaper and a stronger proof of the modularity claim than two static units."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "6.7 Build Order (2–3 Weekends)"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Weekend 1 — establish ESP32-S3 to Wio-E5 UART communication; send and receive a test LoRa packet on the gateway. Confirms the communications backbone before any sensor work.",
+      "Weekend 2 — wire and validate Hydro pod sensors individually; confirm sane readings; integrate into firmware with a CUSUM-based persistence check.",
+      "Weekend 3 — wire and validate Fire/Air pod sensors; integrate the node-level fire-score logic; build the pod-identification mechanism."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "7-modular-sensor-pod-system",
+   "title": "7. Modular Sensor Pod System",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "7.1 Concept"
+    },
+    {
+     "type": "para",
+     "text": "The node is designed as a rugged, field-hardware version of plug-and-play modularity: a Universal Core that never changes, combined with hazard-specific Sensor Pods that can be added, removed or replaced. This is deliberately “LEGO-like” in principle but industrial-grade in execution — keyed, locking, weatherproof, vibration-resistant connectors, not consumer-toy connectors."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "7.2 Automatic Pod Identification"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Each sensor pod carries its own small identity/calibration memory chip (a low-cost I2C EEPROM), storing pod type, model, measurement range, unit, calibration coefficients and driver/firmware compatibility.",
+      "The moment a pod is connected, the node reads this chip over the shared I2C bus and instantly knows what is attached — no manual configuration.",
+      "The node matches the identity against an internal Pack Registry (a lookup table) mapping pod type to sensor drivers, AI model file, and alert thresholds.",
+      "It then automatically initializes the correct drivers, loads the matching pre-trained AI model from flash storage, applies calibration coefficients, and reports READY status to the dashboard.",
+      "No firmware reflash is required — the same physical node becomes a Flood node, Fire node or Air-Quality node purely based on which pod is attached."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "7.3 Safe Field-Replacement Procedure"
+    },
+    {
+     "type": "para",
+     "text": "Hot-swapping is explicitly not claimed as a safety feature, since outdoor sensors are exposed to moisture, static discharge, and electrical transients that make live swapping unsafe. Instead, the platform uses a controlled Maintenance Mode sequence:"
+    },
+    {
+     "type": "para",
+     "text": "Maintenance Mode → isolate sensor interface → remove old/failed pod → insert replacement pod → identify pod metadata → self-test → calibration/health validation → load driver + AI profile → return to service."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "7.4 Three Types of Replacement"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Sensor replacement — same pod type, e.g. a broken PM sensor pod swapped for a new one of the same type.",
+      "Sensor expansion — adding an additional pod to an existing node, e.g. a flood node gaining a water-quality pod.",
+      "Mission reconfiguration — changing what the node monitors entirely, e.g. a forest fire node relocated and reconfigured as an industrial gas node."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "7.5 Maintenance Logistics"
+    },
+    {
+     "type": "para",
+     "text": "Because the expensive components (MCU, radio, battery system, enclosure) remain with the Universal Core, a maintenance team only needs to carry spare pods rather than entire spare nodes — significantly simplifying field logistics at scale."
+    }
+   ]
+  },
+  {
+   "id": "8-sensor-node-gateway-network-and-system-health",
+   "title": "8. Sensor, Node, Gateway, Network and System Health",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "Health monitoring is treated as a first-class intelligence dimension, not an afterthought. The platform must be able to distinguish a real environmental event from a failing sensor, degraded node, communication problem or power problem — and it must never let equipment failure masquerade as an environmental disaster."
+    },
+    {
+     "type": "table",
+     "header": [
+      "Health Layer",
+      "Monitored Signals"
+     ],
+     "rows": [
+      [
+       "Sensor health",
+       "Range plausibility, missing data, stuck readings, impossible jumps, temporal consistency, calibration state, self-test"
+      ],
+      [
+       "Node health",
+       "Battery/charge state, radio signal quality, last-seen time, storage utilization, firmware version, device temperature"
+      ],
+      [
+       "Gateway health",
+       "Backhaul status, LoRaWAN service status, connected-node count, queue/backlog, CPU/memory/load, power/UPS state"
+      ],
+      [
+       "Network health",
+       "Packet-loss rate, latency, node freshness, gateway reachability, reconnect attempts"
+      ],
+      [
+       "System health state",
+       "HEALTHY / DEGRADED / MAINTENANCE / OFFLINE — kept explicitly separate from environmental risk"
+      ]
+     ]
+    },
+    {
+     "type": "para",
+     "text": "Unhealthy sensors are down-weighted or excluded from evidence fusion according to configured rules, rather than being silently trusted. Maintenance alerts are generated for calibration overdue, battery degradation, repeated sensor faults, communication deterioration, and tamper events. The fleet dashboard displays health and environmental risk as separate views so an operator can immediately distinguish “high hazard” from “unreliable node.”"
+    }
+   ]
+  },
+  {
+   "id": "9-communication-and-offline-resilience",
+   "title": "9. Communication and Offline Resilience",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "9.1 Communication Path"
+    },
+    {
+     "type": "para",
+     "text": "Node → LoRaWAN (IN865 regional plan) → Edge Gateway → 4G/5G/Wi-Fi/Ethernet → Cloud/Control Centre."
+    },
+    {
+     "type": "list",
+     "items": [
+      "LoRaWAN is the primary field telemetry link because node payloads are small and low power consumption is essential.",
+      "The gateway carries its own cellular SIM, giving it an independent voice/SMS/IVR path that functions even when broadband backhaul is down.",
+      "Node data does not require continuous raw streaming to the cloud — normal operation transmits compact summaries; events and critical evidence receive higher transmission priority."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "9.2 Offline Behaviour by Condition"
+    },
+    {
+     "type": "table",
+     "header": [
+      "Condition",
+      "System Behaviour"
+     ],
+     "rows": [
+      [
+       "Cloud available",
+       "Node sends telemetry/event summaries → gateway → cloud → dashboard and external alert services"
+      ],
+      [
+       "Internet unavailable",
+       "Gateway continues local inference, risk assessment and local alerting; events are buffered"
+      ],
+      [
+       "Gateway unavailable",
+       "Node keeps measuring, applies available local safety logic, stores events, retries/syncs when gateway returns"
+      ],
+      [
+       "Critical extreme event",
+       "Deterministic safety override bypasses normal persistence waiting when a reading is far beyond plausible danger threshold"
+      ]
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "9.3 Payload Design"
+    },
+    {
+     "type": "table",
+     "header": [
+      "Data Type",
+      "Content",
+      "Frequency Strategy"
+     ],
+     "rows": [
+      [
+       "Normal telemetry",
+       "Node ID, timestamp, sensor values, battery, RSSI, health",
+       "Low rate / compressed"
+      ],
+      [
+       "Watch event",
+       "Feature vector + risk state + top evidence",
+       "Higher rate"
+      ],
+      [
+       "Critical event",
+       "Risk, confidence, evidence, health, sequence, location, local action status",
+       "Immediate"
+      ],
+      [
+       "Camera evidence",
+       "Inference metadata by default; image/clip only on high-confidence events",
+       "Event-driven, via 4G/5G/Wi-Fi — never over LoRa"
+      ],
+      [
+       "Offline data",
+       "Buffered records with sequence numbers",
+       "Uploaded after reconnection"
+      ]
+     ]
+    },
+    {
+     "type": "para",
+     "text": "Note: Mesh self-healing (a node automatically re-associating with the nearest live gateway if its primary gateway fails) is listed as a ROADMAP feature only. It is not claimed as a working prototype capability unless the reassociation logic is actually implemented and tested."
+    }
+   ]
+  },
+  {
+   "id": "10-aiml-architecture",
+   "title": "10. AI/ML Architecture",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "The AI architecture is deliberately distributed across three tiers with distinct responsibilities — not three copies of the same model. Model selection throughout is benchmark-driven: a simpler model is preferred whenever it matches or beats a more complex one on measured precision, recall, false-alarm rate, latency, memory and energy."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "10.1 AI-0 — Node-Level Intelligence (offline-capable, low power)"
+    },
+    {
+     "type": "para",
+     "text": "Signal processing chain: raw sensor reading → range/plausibility check → Median/Hampel filter (spike removal) → EWMA/Kalman smoothing → rate-of-change and acceleration features → CUSUM sustained-shift detection → quantized TinyML logistic classifier → deterministic safety override for extreme values."
+    },
+    {
+     "type": "para",
+     "text": "CUSUM formula: Cₜ = max(0, Cₜ₋₁ + (xₜ − baseline − k)); an anomaly is flagged when Cₜ exceeds a configured threshold h. This detects a sustained shift in sensor readings while remaining robust to single-sample noise."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "10.2 AI-1 — Qualcomm/Edge Gateway Intelligence (primary environmental intelligence layer)"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Isolation Forest — unsupervised anomaly scoring, chosen because real disaster-event labels are naturally sparse and imbalanced.",
+      "XGBoost — separate supervised hazard classifiers per hazard type (Flood-XGB, Fire-XGB, Pollution-XGB, Landslide-XGB); efficient enough to run on CPU, no NPU required.",
+      "GRU — short-horizon escalation forecasting (e.g. predicted water level 10 minutes ahead); benchmarked against LSTM and simple lag-feature baselines rather than assumed superior.",
+      "Explicit spatial-graph features — neighbour_mean_risk, upstream/downstream gradient, agreement ratio — used instead of a full graph neural network in the prototype.",
+      "RTMDet → MobileNetV3-Small — a compact vision detector identifies a smoke/flame region of interest, and a lightweight verifier classifies the cropped region; both models are supported on Qualcomm AI Hub for the IQ-8275 target."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "10.3 AI-2 — Cloud/Regional Intelligence (not on the emergency path)"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Model training, calibration and validation on larger historical datasets.",
+      "GAT/GraphSAGE and temporal-GNN research for advanced hazard-propagation modelling — explicitly an advanced research direction, not a prototype prerequisite.",
+      "Digital twin and what-if simulation.",
+      "Fleet analytics, drift monitoring, and a versioned model registry with rollback."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "10.4 Evidence Fusion Formula"
+    },
+    {
+     "type": "para",
+     "text": "E = Σ(wᵢ · eᵢ) / Σ(wᵢ), where wᵢ = base_reliabilityᵢ × data_qualityᵢ × freshnessᵢ × relevanceᵢ."
+    },
+    {
+     "type": "para",
+     "text": "Every evidence source — a sensor reading, a neighbouring node's corroboration, weather context, or camera evidence — is dynamically weighted rather than treated equally. A stale, low-quality or historically unreliable source contributes proportionally less to the final risk assessment."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "10.5 Qualcomm / Edge Workload Placement"
+    },
+    {
+     "type": "para",
+     "text": "The architecture deliberately uses heterogeneous compute rather than assuming every model must run on an AI accelerator: XGBoost and Isolation Forest run efficiently on general-purpose CPU; GRU, RTMDet and MobileNetV3-Small use the NPU; image preprocessing uses the ISP/GPU where available. On the Raspberry Pi prototype, all models run on CPU; NPU placement is the documented production plan for the Qualcomm Dragonwing IQ-8275."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "10.6 Detection vs. Forecasting — an Honest Distinction"
+    },
+    {
+     "type": "para",
+     "text": "A single low-cost node with only its own sensors can realistically perform anomaly/threshold detection — recognizing that something unusual is happening right now at its location. Genuine multi-hour forecasting (e.g. “75% chance of flooding in 3 hours”) requires broader context: data from multiple nodes across a basin, historical patterns, and often external rainfall forecasts. EcoShield therefore places detection at the node (AI-0) and short-to-medium horizon forecasting at the gateway and cloud tiers (AI-1/AI-2), where that broader context is actually available."
+    }
+   ]
+  },
+  {
+   "id": "11-risk-confidence-and-alert-logic",
+   "title": "11. Risk, Confidence and Alert Logic",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "11.1 Risk and Confidence as Separate Dimensions"
+    },
+    {
+     "type": "table",
+     "header": [
+      "Risk State",
+      "Meaning",
+      "Primary Response"
+     ],
+     "rows": [
+      [
+       "NORMAL",
+       "No meaningful abnormality",
+       "Monitoring only"
+      ],
+      [
+       "WATCH",
+       "Unusual trend or early evidence; insufficient corroboration for a public warning",
+       "Dashboard / internal monitoring"
+      ],
+      [
+       "HIGH",
+       "Multiple evidence sources support an active/developing hazard",
+       "Dashboard + SMS/app/web notification"
+      ],
+      [
+       "CRITICAL",
+       "Strong evidence and/or severe, rapidly escalating conditions",
+       "Multi-channel emergency alert + authority escalation + local warning"
+      ]
+     ]
+    },
+    {
+     "type": "para",
+     "text": "Confidence (LOW / MEDIUM / HIGH) is computed and displayed independently of severity. A “CRITICAL / MEDIUM confidence” state is an intentional, explainable possibility — a potentially severe reading that lacks full independent corroboration is not the same as a “HIGH / HIGH confidence” event that is strongly supported by multiple sources. This separation is deliberately kept visible on the dashboard as a live two-axis (quadrant) view rather than collapsed into a single number."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "11.2 Quorum-Gated Alerting"
+    },
+    {
+     "type": "para",
+     "text": "A CRITICAL public alert requires corroboration from at least two independent evidence sources (for example, two sensors on the same node, a neighbouring node, or camera confirmation), or an extreme, deterministic safety-override threshold. This single design rule serves two purposes simultaneously: it is the escalation logic that prevents false public alarms from a single noisy sensor, and it is the system's core defence against a single spoofed or compromised node fabricating a disaster."
+    }
+   ]
+  },
+  {
+   "id": "12-camera-and-computer-vision-pipeline",
+   "title": "12. Camera and Computer Vision Pipeline",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "The camera is treated strictly as a gateway-side visual module, not a LoRa sensor. Raw video is never transmitted over LoRaWAN — the link's bandwidth simply cannot carry it, and attempting to do so would defeat the purpose of a low-power sensor network."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "12.1 Pipeline Stages"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Capture — RGB (Raspberry Pi Camera Module 3) and optionally thermal (FLIR Lepton 3.5 / MLX90640) frames at the gateway.",
+      "Local transfer — camera connects directly to the gateway via MIPI CSI or USB.",
+      "Pre-processing — resize/crop/normalize, frame-rate reduction, motion/event gating.",
+      "Vision inference — RTMDet detects a smoke/flame region of interest; MobileNetV3-Small verifies the cropped region.",
+      "Evidence extraction — detection class, confidence, timestamp, location, bounding box, model version.",
+      "Multimodal fusion — visual evidence combined with PM, gas, temperature, humidity, neighbour and weather evidence.",
+      "Upstream transmission — compact event metadata by default; a compressed snapshot or short clip is uploaded only for high-confidence events, via 4G/5G/Wi-Fi — never LoRaWAN.",
+      "Offline mode — the gateway continues vision inference, fusion and local alerting even when backhaul fails; selected evidence is buffered for later synchronization."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "12.2 Sustainability: E-Waste-Sourced Cameras"
+    },
+    {
+     "type": "para",
+     "text": "Where feasible, camera modules are sourced from discarded electronics rather than purchased new. This simultaneously reduces prototype hardware cost and gives the project a genuine circular-economy / sustainability angle that is uncommon among comparable systems."
+    }
+   ]
+  },
+  {
+   "id": "13-hazard-specific-intelligence",
+   "title": "13. Hazard-Specific Intelligence",
+   "blocks": [
+    {
+     "type": "table",
+     "header": [
+      "Hazard",
+      "Core Features",
+      "Advanced Features"
+     ],
+     "rows": [
+      [
+       "Flood / flash flood",
+       "Water level, rate of rise, acceleration, rainfall, local baseline, upstream/downstream nodes",
+       "CWC/IMD context, satellite rainfall, soil saturation, terrain/inundation context"
+      ],
+      [
+       "Forest / vegetation fire",
+       "PM2.5/PM10, gas/smoke, temperature, humidity, temporal change, neighbour nodes",
+       "RGB/thermal vision, wind/dryness, satellite hotspot evidence, spatial spread"
+      ],
+      [
+       "Air pollution",
+       "PM2.5/PM10, gas/VOC/CO, temperature/humidity, baseline, trend",
+       "Weather/wind, neighbour nodes, source-region inference"
+      ],
+      [
+       "Landslide / terrain instability",
+       "Soil moisture, tilt/IMU, vibration, rainfall, persistence, spatial agreement",
+       "Terrain/slope data, remote sensing, historical event context"
+      ],
+      [
+       "Water quality degradation",
+       "pH, turbidity, conductivity, temperature, persistence",
+       "Dissolved oxygen, source metadata, downstream propagation"
+      ]
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "13.1 Flood Node Positioning"
+    },
+    {
+     "type": "para",
+     "text": "Flood nodes follow the hydrological path rather than an arbitrary grid, using four positional classes:"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Upstream node — earliest detection of a rising water event.",
+      "River/channel node — tracks the main flow.",
+      "Downstream node — confirms progression toward vulnerable areas.",
+      "Vulnerable-zone node — placed directly at the community or infrastructure at risk."
+     ]
+    },
+    {
+     "type": "para",
+     "text": "This upstream → channel → downstream → vulnerable-zone chain allows the system to measure the spatial progression of a flood wave and warn downstream nodes before the water arrives, rather than relying on a single absolute water-level reading."
+    }
+   ]
+  },
+  {
+   "id": "14-security-and-trust",
+   "title": "14. Security and Trust",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "Security is treated as a full defence-in-depth spine, where each layer defends against a specific, named attack rather than a generic “we have security” claim."
+    },
+    {
+     "type": "table",
+     "header": [
+      "Layer",
+      "Defence",
+      "Stops"
+     ],
+     "rows": [
+      [
+       "Identity",
+       "Unique signed device ID (ATECC608-class secure element target), authenticated provisioning",
+       "Fake/cloned node impersonating a real one"
+      ],
+      [
+       "Transport",
+       "Encrypted LoRaWAN session keys + sequence counters",
+       "Replayed old packets, man-in-the-middle injection"
+      ],
+      [
+       "Physical plausibility (AI-0)",
+       "Range/rate-of-change checks at the node itself",
+       "Obviously impossible spoofed values (e.g. water level jumping 3m in one reading)"
+      ],
+      [
+       "Quorum-gated fusion (AI-1)",
+       "A CRITICAL alert requires ≥2 independent evidence sources or an extreme safety-override threshold",
+       "A single hacked or spoofed node trying to fake a disaster"
+      ],
+      [
+       "Audit + tamper",
+       "Every event traceable to node ID + model version + evidence trace; tamper-switch/IMU flags physical interference",
+       "After-the-fact forensics, physical tampering detection"
+      ]
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "14.1 Additional Security Measures"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Role-based access control for dashboard users.",
+      "Audit logs for every alert and every operator action.",
+      "Firmware integrity checks and a signed/controlled firmware update process.",
+      "Safety-critical models are never self-modifying in production; updates follow train → validate → approve → deploy."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "15-alerting-and-last-mile-communication",
+   "title": "15. Alerting and Last-Mile Communication",
+   "blocks": [
+    {
+     "type": "table",
+     "header": [
+      "Risk Level",
+      "Alert Channels"
+     ],
+     "rows": [
+      [
+       "NORMAL",
+       "No emergency alert"
+      ],
+      [
+       "WATCH",
+       "Dashboard / internal monitoring"
+      ],
+      [
+       "HIGH",
+       "Dashboard + SMS + app/web notification"
+      ],
+      [
+       "CRITICAL",
+       "Dashboard + SMS + voice + IVR (where deployed) + local siren/display + authority escalation"
+      ]
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "15.1 Voice-Based Alerting"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Pre-validated emergency message templates, with dynamic fields limited to safe values (location/zone, severity, action category).",
+      "Multilingual support — prototype target languages: English, Hindi and Telugu.",
+      "Templates are preloaded on the gateway so critical local voice alerts do not depend on cloud text-to-speech."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "15.2 Human Confirm Alerts"
+    },
+    {
+     "type": "para",
+     "text": "Residents can confirm what they are observing via a simple IVR keypress or app action. This human corroboration feeds directly into the confidence score alongside sensor and camera evidence, closing the loop between the automated network and the people who actually live in the affected area."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "15.3 Authority Acknowledgement and Escalation"
+    },
+    {
+     "type": "para",
+     "text": "Alert status progresses through generated → delivered → acknowledged → resolved. Unacknowledged CRITICAL events automatically escalate to the next configured authority level. Full audit logs preserve alert and acknowledgement history."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "15.4 CAP Bridge to SACHET / C-DOT"
+    },
+    {
+     "type": "para",
+     "text": "The Alert Engine includes a CAP Bridge that converts an approved internal event into a Common Alerting Protocol-compliant message — hazard type, severity, certainty/confidence representation, location/geometry, effective time, expiry, instruction, and language fields. Internal rich evidence (raw sensor values, model scores, node health, fusion trace) is kept separate from the public alert payload, but every public alert references its originating event ID and model/rule version for full auditability. EcoShield positions itself explicitly as complementing SACHET/C-DOT dissemination infrastructure, not replacing or rebuilding it."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "15.5 Recommended-Action Engine"
+    },
+    {
+     "type": "para",
+     "text": "The platform can surface rule-based, safety-reviewed suggested actions (e.g. monitor a downstream flood zone, verify a fire-affected area, inspect a bridge, issue an air-quality advisory). This layer is explicitly decision support — it does not autonomously issue unsafe operational commands."
+    }
+   ]
+  },
+  {
+   "id": "16-gis-dashboard-impact-intelligence-and-digital-twin",
+   "title": "16. GIS Dashboard, Impact Intelligence and Digital Twin",
+   "blocks": [
+    {
+     "type": "list",
+     "items": [
+      "Live regional GIS risk map with hazard hotspots and trends.",
+      "Node status, health, and last-seen time.",
+      "Population and critical-infrastructure impact overlays (hospitals, schools, bridges, roads, power/industrial assets).",
+      "Evidence/explanation panel showing why a given alert was raised.",
+      "Historical event timeline and alert acknowledgement/escalation status."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "16.1 Digital Twin (Advanced Layer)"
+    },
+    {
+     "type": "para",
+     "text": "The digital twin is a what-if simulation layer (e.g. “simulate 200mm rainfall over this basin in 6 hours”) used for planner decision support and scenario testing. It is explicitly treated as an advanced, cloud-side capability rather than a headline feature or a prerequisite for the core working prototype, since equivalent functionality is commonly claimed by many competing systems."
+    }
+   ]
+  },
+  {
+   "id": "17-deployment-strategy",
+   "title": "17. Deployment Strategy",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "17.1 Risk-Driven Node Placement"
+    },
+    {
+     "type": "para",
+     "text": "Node density and placement are not based on a simplistic rule such as “one node every X metres.” Instead, placement follows a combined optimisation:"
+    },
+    {
+     "type": "para",
+     "text": "Risk Map + Hazard Map + Population + Critical Infrastructure + Terrain + Radio Coverage → Node Placement Optimisation."
+    },
+    {
+     "type": "list",
+     "items": [
+      "High-risk areas receive denser and/or redundant sensing.",
+      "Low-risk areas use sparser coverage.",
+      "Critical locations can have independent redundant sensors to improve corroboration.",
+      "Placement aims to maximise useful evidence, not simply maximise node count."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "17.2 Gateway Zones and Redundancy"
+    },
+    {
+     "type": "para",
+     "text": "Large deployments are divided into local gateway zones, each serving a cluster of nearby nodes. Critical zones can use overlapping gateway coverage so that loss of a single gateway does not eliminate local sensing. The resilience claim is explicitly edge decision-making plus local buffering plus retry/store-and-forward — a custom self-healing mesh is not claimed unless actually implemented and tested."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "17.3 Representative Deployment Patterns"
+    },
+    {
+     "type": "table",
+     "header": [
+      "Environment",
+      "Node Pattern",
+      "Gateway Pattern"
+     ],
+     "rows": [
+      [
+       "City",
+       "Dense multi-hazard nodes at drains, pollution hotspots, industrial boundaries",
+       "Rooftop / municipal / control-centre gateways"
+      ],
+      [
+       "River basin",
+       "Upstream → channel → downstream → vulnerable-zone nodes",
+       "Elevated secure points with reliable backhaul"
+      ],
+      [
+       "Forest",
+       "Distributed fire/air nodes along high-risk zones and boundaries",
+       "Elevated tower/ranger/secure gateway points"
+      ],
+      [
+       "Hills",
+       "Slope nodes + lower-zone impact nodes",
+       "Stable elevated locations with good radio geometry"
+      ],
+      [
+       "Industrial",
+       "Perimeter and process-risk nodes",
+       "Secure plant/control-room gateways, redundant coverage"
+      ],
+      [
+       "Rural/vulnerable community",
+       "Hazard-specific nodes + local voice/siren capability",
+       "Solar/secure community or telecom-site gateway"
+      ]
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "17.4 Infrastructure-Piggyback Deployment"
+    },
+    {
+     "type": "para",
+     "text": "Wherever possible, sensor pods are retrofitted onto existing infrastructure — electricity poles, telecom towers, and CWC gauge stations — instead of constructing new greenfield sites. This sharply reduces installation cost, time, and land/permission overhead."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "17.5 Economic Framing: Cost per km² of Coverage"
+    },
+    {
+     "type": "para",
+     "text": "Rather than presenting only a raw per-node bill of materials, deployment economics are framed as cost per km² of previously unmonitored coverage gained — turning the hardware cost table into an impact argument rather than a parts list."
+    }
+   ]
+  },
+  {
+   "id": "18-software-stack-and-data-architecture",
+   "title": "18. Software Stack and Data Architecture",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "18.1 Software Stack"
+    },
+    {
+     "type": "table",
+     "header": [
+      "Layer",
+      "Technology",
+      "Purpose"
+     ],
+     "rows": [
+      [
+       "Node firmware",
+       "ESP-IDF / Arduino C++, ESP-NN/ESP-DSP",
+       "Drivers, filtering, health, local inference, LoRa payloads, sleep/wake"
+      ],
+      [
+       "Gateway services",
+       "Python, FastAPI, MQTT, OpenCV, ONNX Runtime / Qualcomm AI Runtime",
+       "Fusion, inference, camera pipeline, risk/alerts"
+      ],
+      [
+       "Edge storage",
+       "SQLite / local PostgreSQL subset",
+       "Store-and-forward buffering and local history"
+      ],
+      [
+       "Cloud API",
+       "FastAPI",
+       "Data and event APIs"
+      ],
+      [
+       "Cloud database",
+       "PostgreSQL + TimescaleDB",
+       "Time-series sensor data + relational metadata"
+      ],
+      [
+       "ML",
+       "scikit-learn, XGBoost, PyTorch",
+       "Training, benchmarking, temporal/spatial experiments"
+      ],
+      [
+       "Model lifecycle",
+       "MLflow + object storage + approval registry",
+       "Versioning and controlled deployment"
+      ],
+      [
+       "Frontend",
+       "Next.js/React + Leaflet/Mapbox",
+       "GIS risk map, node health, alert centre"
+      ],
+      [
+       "Alerts",
+       "SMS/IVR provider + local voice/siren + CAP adapter",
+       "Multi-channel last-mile dissemination"
+      ]
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "18.2 Event Data Model"
+    },
+    {
+     "type": "para",
+     "text": "The event object is the core unit of downstream intelligence, retaining full evidence and health context rather than a single flag:"
+    },
+    {
+     "type": "para",
+     "text": "{ node_id, gateway_id, timestamp, location, hazard, risk_level, confidence, evidence[], trend, sensor_health, system_health, model_version, local_action_status, sequence_id }"
+    }
+   ]
+  },
+  {
+   "id": "19-datasets-and-model-lifecycle-mlops",
+   "title": "19. Datasets and Model Lifecycle (MLOps)",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "19.1 Data Sources"
+    },
+    {
+     "type": "table",
+     "header": [
+      "Hazard",
+      "Primary Sources",
+      "Use"
+     ],
+     "rows": [
+      [
+       "Flood",
+       "CWC hydrometeorological data, IMD gridded rainfall, NASA GPM (supplementary)",
+       "Historical features/labels and validation"
+      ],
+      [
+       "Fire",
+       "NASA FIRMS (MODIS/VIIRS), FSI fire alerts, D-Fire dataset, IIITDMJ Smoke dataset",
+       "Event labels and vision model training/validation"
+      ],
+      [
+       "Air quality",
+       "CPCB AQI/CAAQMS repository + meteorology",
+       "PM/gas baselines and spatio-temporal patterns"
+      ],
+      [
+       "Landslide",
+       "NASA Global Landslide Catalog + rainfall/terrain data",
+       "Event labels and contextual features"
+      ],
+      [
+       "Own network",
+       "Controlled bench data + field observations + operator feedback",
+       "Calibration, local baseline, fine-tuning, false-alarm analysis"
+      ]
+     ]
+    },
+    {
+     "type": "para",
+     "text": "Public and simulated datasets support model development but do not replace local calibration or prove field accuracy. Final claims must clearly distinguish real field measurements, public historical data, and simulated/controlled data."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "19.2 Training, Validation and Deployment Pipeline"
+    },
+    {
+     "type": "para",
+     "text": "Data → QA → Label → Train → Validate → Calibrate → Register → Optimize → Edge Benchmark → Approval → Deploy → Monitor → Drift Detection → Retrain."
+    },
+    {
+     "type": "list",
+     "items": [
+      "Location-aware and time-aware evaluation splits are used to avoid data leakage from near-identical events at the same location.",
+      "Reported metrics include precision, recall, F1, false-positive rate, false-negative rate, detection latency, lead time, inference time, model size and power.",
+      "A deterministic extreme-value safety override is always maintained, even when ML confidence is uncertain.",
+      "Safety-critical models are never self-modifying in production; every update goes through validation and approval before deployment."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "20-feasibility-risks-and-mitigation",
+   "title": "20. Feasibility, Risks and Mitigation",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "20.1 Feasibility"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Built entirely on proven, commercially available components — not speculative hardware.",
+      "Realistic prototype cost of approximately ₹9,000–12,500 per fully instrumented node, and ₹20,000–31,000 for a complete two-pod demonstration build including gateway.",
+      "Infrastructure-piggyback deployment sharply reduces installation cost and time versus greenfield sites.",
+      "A phased rollout — prototype → pilot → district → state — with each phase gated by measured validation rather than assumption.",
+      "Benchmark-driven model selection throughout; no algorithm is chosen because it “sounds advanced.”"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "20.2 Challenges and Risks"
+    },
+    {
+     "type": "list",
+     "items": [
+      "LoRa range collapses in dense forest and hilly terrain due to foliage and elevation attenuation.",
+      "The gateway is a potential single point of failure for its node cluster.",
+      "Low-cost gas/PM sensors drift over time and require periodic recalibration at scale.",
+      "A safety-critical alert network is an attractive target for spoofed or malicious node injection.",
+      "Field maintenance and labour logistics across remote, climatically diverse terrain.",
+      "Live integration with CAP/SACHET depends on authorized government access.",
+      "Class imbalance in training data, since real disaster events are naturally rare."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "20.3 Mitigation Strategies"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Ridge-line gateway placement, directional antennas, and redundant gateway coverage in critical zones.",
+      "Store-and-forward buffering plus a local voice/siren failsafe independent of gateway/cloud availability; the gateway's own SIM provides a backup voice/SMS/IVR path even without broadband.",
+      "Trust-weighted neighbour recalibration turns sensor drift into a self-correcting network property instead of a maintenance emergency.",
+      "The five-layer security spine directly defends against spoofing and cloned-node attacks; no single compromised node can trigger a public CRITICAL alert.",
+      "A two-tier labour model: local caretakers (aligned with Panchayat/Jal Jeevan Mission networks) handle basic upkeep, while regional technicians perform pod-level field replacement, guided by remote health telemetry so visits are planned rather than reactive.",
+      "A CAP-compatible payload is built and demonstrated now, with live SACHET/C-DOT integration explicitly positioned as an authorized deployment step rather than a prototype dependency.",
+      "Weighted losses, event-based evaluation, and careful negative sampling address class imbalance honestly rather than through synthetic overfitting."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "20.4 Graceful Degradation Table"
+    },
+    {
+     "type": "table",
+     "header": [
+      "Failure",
+      "System Response"
+     ],
+     "rows": [
+      [
+       "One sensor fails",
+       "Marked degraded; down-weighted or excluded in fusion; other sensors continue"
+      ],
+      [
+       "One node fails",
+       "Neighbour nodes/backup coverage continue; event loss logged"
+      ],
+      [
+       "Gateway loses internet",
+       "Local AI, local alerts and buffering continue unaffected"
+      ],
+      [
+       "Gateway fails entirely",
+       "Nodes continue local safety logic, buffer, and retry/sync when a gateway returns"
+      ],
+      [
+       "Camera fails",
+       "Sensor-only path remains available; confidence adjusted accordingly"
+      ],
+      [
+       "Cloud unavailable",
+       "Zero effect on immediate local emergency decisions"
+      ],
+      [
+       "Power low",
+       "Adaptive sensing reduces duty cycle; maintenance health state escalates"
+      ],
+      [
+       "False sensor anomaly",
+       "Sensor-health engine prevents it becoming an automatic public alert"
+      ]
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "20.5 Additional India-Scale Limitations"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Spectrum/regulatory compliance — LoRa in India operates under WPC rules; NB-IoT requires telecom operator spectrum agreements.",
+      "Extreme terrain and climate diversity — coastal salinity, Himalayan sub-zero winters, and desert heat each demand different hardware variants.",
+      "Multi-agency governance — disaster response is constitutionally a state subject, requiring routing to the correct SDMA/district authority.",
+      "Data ownership, privacy and liability for camera-based monitoring near private property.",
+      "Manufacturing and supply-chain resilience at volumes beyond hobbyist-grade components.",
+      "Cybersecurity of a safety-critical network at national scale."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "21-impact-and-benefits",
+   "title": "21. Impact and Benefits",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "21.1 Impact on Target Audience"
+    },
+    {
+     "type": "para",
+     "text": "Rural and urban communities in flood-prone (Assam, Bihar, Kerala, Maharashtra), fire-prone (Uttarakhand, Himachal Pradesh, central India) and industrially exposed regions gain earlier, localized, offline-resilient warnings — shifting disaster response from reactive to proactive. Human Confirm Alerts and multilingual offline voice ensure the system reaches people without smartphones or reliable data connectivity. Government agencies (NDMA, IMD, ISRO, state SDMAs) gain a dense, hyperlocal evidence layer that strengthens their existing forecasting and dissemination infrastructure rather than duplicating it."
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "21.2 Impact Metrics (Design Targets — Pending Field Validation)"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Minutes-level local detection versus approximately 3 hours for satellite-based fire detection (NASA FIRMS MODIS/VIIRS); satellites can miss short-lived fires entirely between overpasses.",
+      "Reduced false-alarm rate via quorum-gated, multi-sensor and neighbour-corroborated alerting versus single-sensor triggers.",
+      "Zero dependency on cloud connectivity for the local emergency alerting path.",
+      "Deployment cost reduction via infrastructure-piggyback siting versus greenfield installation.",
+      "Scalable from a single node (~₹9,000–12,500) to district/state coverage without redesigning hardware.",
+      "Eight distinct failure modes explicitly handled with a defined system response, not just the happy path."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "21.3 Benefits"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "Social"
+    },
+    {
+     "type": "para",
+     "text": "Faster, localized, spoof-resistant warnings save lives in remote and low-connectivity areas. Multilingual offline voice and IVR-based Human Confirm Alerts include populations that smartphone-app-based systems structurally leave behind."
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "Economic"
+    },
+    {
+     "type": "para",
+     "text": "Substantially lower cost than expanding reference-grade infrastructure (a single CPCB monitoring station costs ₹50 lakh or more). Infrastructure-piggyback siting and cost-per-km²-of-coverage framing make network expansion economically defensible. Earlier, better-verified action reduces downstream disaster response and relief costs."
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "Environmental"
+    },
+    {
+     "type": "para",
+     "text": "E-waste-sourced camera modules reduce both electronic waste and hardware cost simultaneously. Better forest-fire, pollution and water-quality monitoring directly supports conservation and public-health policy. Solar-powered, low-maintenance nodes minimize the network's own environmental footprint."
+    }
+   ]
+  },
+  {
+   "id": "22-prototype-scope-and-demonstration-plan",
+   "title": "22. Prototype Scope and Demonstration Plan",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "22.1 What Is Physically Built"
+    },
+    {
+     "type": "list",
+     "items": [
+      "One Universal Core with a field-replaceable Hydro pod and a field-replaceable Fire/Air pod.",
+      "LoRaWAN link using Wio-E5 in IN865 configuration.",
+      "One edge gateway (Raspberry Pi, with camera).",
+      "Sensor-health and false-sensor demonstration.",
+      "Flood escalation demonstration.",
+      "Fire evidence-fusion demonstration.",
+      "Internet-disconnect / offline demonstration with buffered-event synchronization on reconnect.",
+      "Critical voice/local-warning demonstration.",
+      "GIS dashboard with a representative multi-node deployment."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "22.2 What Is Simulated or Integrated Rather Than Fully Built"
+    },
+    {
+     "type": "list",
+     "items": [
+      "District/state-scale deployment and full gateway redundancy.",
+      "Live satellite and national weather feed integration.",
+      "Full production C-DOT CAP/SACHET integration — a standards-compatible CAP payload/adapter is demonstrated instead.",
+      "A full state-scale digital twin — a small synthetic flood/fire propagation scenario is demonstrated instead.",
+      "Large-scale retraining pipelines — versioned training/validation on public and controlled data is demonstrated instead.",
+      "Production-grade industrial radar level sensors and precision gas/soil probes."
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "22.3 Live Demonstration Sequence"
+    },
+    {
+     "type": "list",
+     "items": [
+      "1. Normal state — dashboard remains NORMAL.",
+      "2. Controlled flood stimulus — escalates through WATCH to HIGH/CRITICAL with visible trend evidence.",
+      "3. Controlled fire stimulus — temperature/PM/gas plus camera evidence fuse into a single event.",
+      "4. False sensor case — an isolated abnormal reading is classified as a sensor anomaly, not a public alert.",
+      "5. Disconnect the internet — the edge gateway continues risk calculation and local alerting.",
+      "6. Reconnect — buffered events synchronize to the cloud.",
+      "7. Live pod swap — the Hydro pod is removed and the Fire/Air pod is inserted; the node auto-identifies and reconfigures with zero reflash.",
+      "8. Critical event — voice/local warning plus the alert acknowledgement workflow."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "23-roadmap",
+   "title": "23. Roadmap",
+   "blocks": [
+    {
+     "type": "table",
+     "header": [
+      "Phase",
+      "Scope",
+      "Gate for Progression"
+     ],
+     "rows": [
+      [
+       "Prototype",
+       "2–3 field nodes, one edge gateway, core hazards, offline and alert demo",
+       "Repeatable readings + working local decisions + measured comms/power"
+      ],
+      [
+       "Pilot",
+       "Small region, real sensor observations, representative gateway coverage",
+       "False-alarm rate, calibration quality, uptime validated"
+      ],
+      [
+       "District",
+       "More nodes, redundant gateways at critical zones, external-data integration",
+       "Coverage, reliability, maintenance logistics validated"
+      ],
+      [
+       "State",
+       "Multi-zone deployment, regional GIS, authorized CAP/SACHET integration",
+       "Operational governance, data/security approvals, sustained performance"
+      ],
+      [
+       "Multi-state / National",
+       "Fleet management, placement optimization, broader dissemination",
+       "Long-term reliability, validated models, governance and economics"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "24-innovation-summary",
+   "title": "24. Innovation Summary",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "Ranked by defensibility — how difficult each feature would be for a competing team to replicate quickly, and how directly each answers a question a technical jury is likely to ask."
+    },
+    {
+     "type": "list",
+     "items": [
+      "Quorum-Gated Alerting — simultaneously the escalation logic and the core anti-spoofing defence.",
+      "Trust-Weighted Neighbour Recalibration — grounded in published wireless-sensor-network research (Takruri et al., spatio-temporal drift-aware calibration), not a guess.",
+      "Risk separated from Confidence as two independently computed and displayed values.",
+      "Five-layer Security Spine — identity, transport, plausibility, quorum fusion, audit/tamper.",
+      "Human Confirm Alerts — resident corroboration feeding directly into the confidence score.",
+      "Universal Node + Field-Replaceable Pods with automatic identification and zero-reflash AI-profile loading.",
+      "E-waste-sourced camera modules — a genuine circular-economy differentiator.",
+      "Gateway's own SIM — an independent voice/SMS/IVR path even without broadband.",
+      "Infrastructure-piggyback deployment and cost-per-km² framing — turning the BOM into an economic argument.",
+      "Camera AI processed entirely at the edge, with raw video never traversing LoRaWAN."
+     ]
+    },
+    {
+     "type": "para",
+     "text": "Digital twin simulation and cloud-side GenAI assistance are retained in the architecture as advanced capabilities, but are deliberately not headlined, since equivalent functionality is commonly claimed by many competing systems and does not differentiate EcoShield on its own."
+    }
+   ]
+  },
+  {
+   "id": "25-anticipated-jury-questions-and-prepared-answers",
+   "title": "25. Anticipated Jury Questions and Prepared Answers",
+   "blocks": [
+    {
+     "type": "list",
+     "items": [
+      "Why does the node need AI if the gateway has more compute? — The node's AI-0 layer exists to keep the emergency detection and local-alert path functional with zero connectivity to the gateway or cloud; it performs filtering, plausibility checks and a lightweight anomaly signal so the network degrades gracefully rather than going blind.",
+      "Why not send all data directly to the cloud? — LoRaWAN payloads are extremely small by design to keep power consumption low; continuous raw streaming is neither technically possible over this link nor necessary, since most value comes from summarized, evidence-fused decisions rather than raw time-series.",
+      "Why can't LoRa carry camera video? — LoRa payloads are measured in bytes, not kilobytes; a single video frame is orders of magnitude too large. This is precisely why the camera connects directly to the gateway rather than routing through a node's LoRa radio.",
+      "How do you distinguish a faulty sensor from a real hazard? — Every reading passes through sensor-health scoring (plausibility, temporal consistency, calibration state) and is checked against neighbouring nodes; an isolated abnormal reading without corroboration is flagged as a sensor anomaly rather than promoted to a public alert.",
+      "How do you prevent a false alarm from one sensor? — Quorum-Gated Alerting requires at least two independent evidence sources, or a deterministic extreme-value override, before any CRITICAL public alert is issued.",
+      "How does the system work without internet? — The edge gateway performs the full risk/confidence calculation and issues local voice/siren alerts entirely offline; events are buffered locally and synchronized once connectivity returns.",
+      "What happens when a sensor pod is replaced? — The new pod's identity chip is read automatically, the correct driver and AI profile are loaded, and the node completes a self-test and calibration check before returning to service — no firmware reflash is required.",
+      "What data trains your models? — A combination of public institutional datasets (CWC, IMD, CPCB, NASA FIRMS, NASA Global Landslide Catalog) for baseline features and labels, and the team's own controlled bench and field data for calibration and fine-tuning; these sources are always clearly distinguished in reporting.",
+      "How do you evaluate false negatives and false positives? — Using location-aware and time-aware train/test splits to avoid leakage, and reporting precision, recall, F1, false-positive rate, false-negative rate, detection latency and lead time for every candidate model before selection.",
+      "What is simulated versus physically demonstrated? — The physical prototype demonstrates two real field nodes, one gateway, live pod-swap reconfiguration, offline/reconnect behaviour, and evidence-fused alerting; district/state-scale deployment, live SACHET integration, and a full digital twin are explicitly simulated or represented as standards-compatible interfaces rather than claimed as fully built.",
+      "Is a large language model making the safety decision? — No. Generative AI is restricted to natural-language dashboard queries, human-readable explanations of why an alert was raised, and report summarization. It is never the primary hazard detector and does not independently decide whether a critical event exists."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "26-references",
+   "title": "26. References",
+   "blocks": [
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "26.1 Government and Institutional Sources"
+    },
+    {
+     "type": "list",
+     "items": [
+      "SIH 2026 PS 26178 — Qualcomm Inc. — https://sih2026.vuce.in/ps/SIH26178",
+      "NDMA SACHET Portal — https://sachet.ndma.gov.in/",
+      "C-DOT CAP Integrated Alert System — https://www.cdot.in/cdotweb/assets/docs/products/dms/cap.pdf",
+      "Kerala SDMA, Orange Book of Disaster Management — https://sdma.kerala.gov.in/",
+      "CWC flood management / hydrometeorological data — https://cwc.gov.in/",
+      "CPCB AQI / CAAQMS data repository — https://airquality.cpcb.gov.in/AQI_India/",
+      "FSI forest fire alert system — https://fsiforestfire.gov.in/",
+      "ISRO Disaster Management Support — https://www.isro.gov.in/DisasterManagementSupport.html"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "26.2 Satellite and Scientific Data Sources"
+    },
+    {
+     "type": "list",
+     "items": [
+      "NASA FIRMS (MODIS/VIIRS active fire data) — https://earthdata.nasa.gov/data/tools/firms",
+      "NASA Global Landslide Catalog — https://earth.gsfc.nasa.gov/hydro/data/landslide-hazard-assessment",
+      "NASA GPM precipitation products (supplementary flood data)"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "26.3 Hardware and Component References"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Espressif ESP32-S3 — https://www.espressif.com/en/node/4993",
+      "Seeed Wio-E5 (IN865 LoRaWAN) — https://wiki.seeedstudio.com/LoRa_E5_Dev_Board/",
+      "Sensirion SPS30 — https://sensirion.com/sps30",
+      "DFRobot A02YYUW — https://wiki.dfrobot.com/sen0311",
+      "DFRobot SEN0575 rainfall sensor — https://wiki.dfrobot.com/sen0575/",
+      "Analog Devices ADXL355 — https://www.analog.com/en/products/adxl355.html",
+      "Raspberry Pi Camera Module 3 — https://www.raspberrypi.com/products/camera-module-3/",
+      "Teledyne FLIR Lepton — https://oem.flir.com/en-in/products/lepton/"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "26.4 Qualcomm and AI Platform References (Production Target)"
+    },
+    {
+     "type": "list",
+     "items": [
+      "Qualcomm Dragonwing IQ-8275 — https://www.qualcomm.com/internet-of-things/products/iq8-series/iq-8275",
+      "Qualcomm IQ-8275 Evaluation Kit — https://www.qualcomm.com/developer/hardware/qualcomm-iq-8275-evaluation-kit-evk",
+      "Qualcomm AI Hub — RTMDet — https://aihub.qualcomm.com/iot/models/rtmdet",
+      "Qualcomm AI Hub — MobileNetV3-Small — https://aihub.qualcomm.com/iot/models/mobilenet_v3_small"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "26.5 ML and Networking Standards"
+    },
+    {
+     "type": "list",
+     "items": [
+      "XGBoost documentation — https://xgboost.readthedocs.io/en/stable/",
+      "LoRa Alliance — LoRaWAN Specification v1.0.3 — https://resources.lora-alliance.org/document/lorawan-specification-v1-0-3",
+      "Takruri et al. — spatio-temporal drift-aware WSN calibration (basis for trust-weighted neighbour recalibration) — exact title/DOI to be verified before final submission"
+     ]
+    },
+    {
+     "type": "para",
+     "text": "Note: All prices, availability, and performance figures throughout this document are engineering planning values captured during design and must be re-verified from primary sources before being stated as final facts in a submission or to a jury."
+    }
+   ]
+  },
+  {
+   "id": "appendix-a-full-feature-checklist",
+   "title": "Appendix A — Full Feature Checklist",
+   "blocks": [
+    {
+     "type": "table",
+     "header": [
+      "Feature",
+      "Status"
+     ],
+     "rows": [
+      [
+       "Universal Core (common MCU, power, storage, radio, identity, firmware)",
+       "Core — Locked"
+      ],
+      [
+       "Modular sensor pods (Hydro/Fire/Air/Terrain/Water-Quality/Weather)",
+       "Core — Locked"
+      ],
+      [
+       "Automatic pod identification + calibration metadata",
+       "Core — Locked (headline)"
+      ],
+      [
+       "Automatic AI-profile loading on pod swap (no reflash)",
+       "Core — Locked (headline)"
+      ],
+      [
+       "Safe field-replacement procedure (maintenance mode)",
+       "Core — Locked"
+      ],
+      [
+       "Hot-swapping",
+       "Explicitly NOT claimed"
+      ],
+      [
+       "Solar + LiFePO4 power, INA219 telemetry",
+       "Core — Locked"
+      ],
+      [
+       "E-waste-sourced camera modules",
+       "Unique differentiator"
+      ],
+      [
+       "5-layer health monitoring (sensor/node/gateway/network/system)",
+       "Core — Locked"
+      ],
+      [
+       "LoRaWAN IN865 node-to-gateway",
+       "Core — Locked"
+      ],
+      [
+       "4G/5G/Wi-Fi/Ethernet gateway-to-cloud",
+       "Core — Locked"
+      ],
+      [
+       "Gateway's own SIM for independent voice/SMS/IVR",
+       "Core — Locked"
+      ],
+      [
+       "Store-and-forward offline buffering",
+       "Core — Locked"
+      ],
+      [
+       "Mesh self-healing / gateway failover",
+       "Roadmap / P2 only"
+      ],
+      [
+       "Three-tier AI: Node → Edge → Cloud",
+       "Core — Locked"
+      ],
+      [
+       "Sensor-health-aware evidence fusion",
+       "Core — Locked"
+      ],
+      [
+       "Neighbour-node corroboration",
+       "Core — Locked"
+      ],
+      [
+       "Quorum-Gated Alerting",
+       "Unique differentiator"
+      ],
+      [
+       "Trust-Weighted Neighbour Recalibration",
+       "Unique differentiator (research-grounded)"
+      ],
+      [
+       "Risk separated from Confidence",
+       "Unique differentiator"
+      ],
+      [
+       "Adaptive sampling by risk state",
+       "Core — Locked"
+      ],
+      [
+       "Camera/thermal vision at edge, metadata only over LoRa",
+       "Core — Locked"
+      ],
+      [
+       "Benchmark-driven model selection",
+       "Core — Locked"
+      ],
+      [
+       "Dashboard, SMS, voice, IVR, local siren",
+       "Core — Locked"
+      ],
+      [
+       "Alert acknowledgement + escalation workflow",
+       "Core — Locked"
+      ],
+      [
+       "Human Confirm Alerts",
+       "Unique differentiator"
+      ],
+      [
+       "CAP-compatible payload/adapter for SACHET/C-DOT",
+       "Core — Locked"
+      ],
+      [
+       "Recommended-action engine (decision support only)",
+       "Core — Locked"
+      ],
+      [
+       "GIS risk map, population/infra overlay",
+       "Core — Locked"
+      ],
+      [
+       "Digital twin / what-if simulation",
+       "Advanced — mention once"
+      ],
+      [
+       "Security spine (identity/transport/plausibility/quorum/audit)",
+       "Core — Locked"
+      ],
+      [
+       "Continual learning with train/validate/approve/deploy gate",
+       "Core — Locked"
+      ],
+      [
+       "Controlled GenAI (explanations, NL queries)",
+       "Advanced — not primary detector"
+      ],
+      [
+       "Risk-driven node placement",
+       "Core — Locked"
+      ],
+      [
+       "Gateway zones + critical-zone redundancy",
+       "Core — Locked"
+      ],
+      [
+       "Infrastructure-piggyback deployment",
+       "Unique differentiator"
+      ],
+      [
+       "Cost-per-km² coverage framing",
+       "Unique differentiator"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "appendix-b-bill-of-materials-prototype",
+   "title": "Appendix B — Bill of Materials (Prototype)",
+   "blocks": [
+    {
+     "type": "table",
+     "header": [
+      "Item",
+      "Approx. Cost (₹)"
+     ],
+     "rows": [
+      [
+       "ESP32-S3 (WROOM-1, N16R8)",
+       "700 – 900"
+      ],
+      [
+       "Seeed Wio-E5 Dev Kit",
+       "3,500 – 3,800"
+      ],
+      [
+       "TI INA219 power monitor",
+       "150 – 250"
+      ],
+      [
+       "LiFePO4 cell, ~6Ah",
+       "500 – 700"
+      ],
+      [
+       "Solar panel, 5–10W",
+       "400 – 700"
+      ],
+      [
+       "TP5000 charge controller",
+       "150 – 300"
+      ],
+      [
+       "IP65 enclosure",
+       "250 – 400"
+      ],
+      [
+       "DFRobot A02YYUW ultrasonic water-level sensor",
+       "1,600 – 1,800"
+      ],
+      [
+       "DFRobot SEN0575 rain gauge",
+       "1,200 – 2,000"
+      ],
+      [
+       "Sensirion SPS30 PM sensor",
+       "3,800 – 4,200"
+      ],
+      [
+       "MQ-2 gas/smoke sensor",
+       "150 – 300"
+      ],
+      [
+       "DHT22 / SHT31 temperature-humidity sensor (x2)",
+       "500 – 1,000"
+      ],
+      [
+       "Raspberry Pi 4/5 (gateway)",
+       "5,000 – 8,000"
+      ],
+      [
+       "USB LoRa receiver",
+       "2,000 – 3,000"
+      ],
+      [
+       "Raspberry Pi Camera Module 3 (optional)",
+       "2,500 – 3,000"
+      ],
+      [
+       "Total — full demoable prototype (Core + both pods + gateway)",
+       "20,000 – 31,000"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "appendix-c-sample-event-payload",
+   "title": "Appendix C — Sample Event Payload",
+   "blocks": [
+    {
+     "type": "para",
+     "text": "{"
+    },
+    {
+     "type": "para",
+     "text": "\"node_id\": \"HYDRO-014\","
+    },
+    {
+     "type": "para",
+     "text": "\"gateway_id\": \"GW-04\","
+    },
+    {
+     "type": "para",
+     "text": "\"timestamp\": \"2026-09-27T11:42:10+05:30\","
+    },
+    {
+     "type": "para",
+     "text": "\"location\": { \"lat\": 26.14, \"lon\": 91.73 },"
+    },
+    {
+     "type": "para",
+     "text": "\"hazard\": \"flood\","
+    },
+    {
+     "type": "para",
+     "text": "\"risk_level\": \"HIGH\","
+    },
+    {
+     "type": "para",
+     "text": "\"confidence\": \"MEDIUM\","
+    },
+    {
+     "type": "para",
+     "text": "\"evidence\": [\"water_level_rate\", \"rainfall_trend\", \"neighbor_agreement\"],"
+    },
+    {
+     "type": "para",
+     "text": "\"sensor_health\": \"HEALTHY\","
+    },
+    {
+     "type": "para",
+     "text": "\"system_health\": \"HEALTHY\","
+    },
+    {
+     "type": "para",
+     "text": "\"model_version\": \"flood-xgb-v1.3\","
+    },
+    {
+     "type": "para",
+     "text": "\"local_action_status\": \"siren_active\","
+    },
+    {
+     "type": "para",
+     "text": "\"sequence_id\": 88231"
+    },
+    {
+     "type": "para",
+     "text": "}"
+    }
+   ]
+  },
+  {
+   "id": "appendix-d-glossary-of-terms",
+   "title": "Appendix D — Glossary of Terms",
+   "blocks": [
+    {
+     "type": "table",
+     "header": [
+      "Term",
+      "Meaning"
+     ],
+     "rows": [
+      [
+       "AI-0 / AI-1 / AI-2",
+       "The three intelligence tiers: node, edge gateway, and cloud"
+      ],
+      [
+       "CAP",
+       "Common Alerting Protocol — a standard alert message format used by SACHET/C-DOT"
+      ],
+      [
+       "CUSUM",
+       "Cumulative Sum — a statistical method for detecting a sustained shift in a data stream"
+      ],
+      [
+       "Evidence Fusion",
+       "Combining multiple independent evidence sources into a single weighted risk assessment"
+      ],
+      [
+       "Quorum-Gated Alerting",
+       "Requiring corroboration from ≥2 independent sources before a CRITICAL public alert"
+      ],
+      [
+       "Sensor Pod",
+       "A field-replaceable module carrying the sensors for one hazard type"
+      ],
+      [
+       "Universal Core",
+       "The common hardware base (MCU, power, radio, storage) shared across all node types"
+      ],
+      [
+       "Quorum",
+       "The minimum number of independent evidence sources required to confirm an event"
+      ]
+     ]
+    }
+   ]
+  }
+ ]
+}
