@@ -69,7 +69,13 @@ Services: `web` (Next.js standalone), `api` (FastAPI), `db` (TimescaleDB + PostG
 - TLS everywhere; unset `IRIS_INSECURE_COOKIES`; restrict `IRIS_CORS_ORIGINS` to real origins.
 - Rotate `IRIS_AUTH_SECRET`; use a secret manager. Replace the env-var user list with an identity provider or hashed DB users; move login throttling to a shared store (Redis).
 - Move the WebSocket token from the query string to a subprotocol header or one-time ticket.
-- Swap SQLite for PostgreSQL/TimescaleDB (`infrastructure/database/schema.sql` is ready) and run the alert engine as a single writer.
+- **Database (Supabase or any PostgreSQL):**
+  1. Create a Supabase project (or any Postgres instance).
+  2. Open Supabase → SQL Editor → paste the contents of `infrastructure/database/supabase.sql` → Run. (The API also runs this itself on startup, so this step is a safety net, not a hard requirement.)
+  3. Copy Project Settings → Database → Connection string → **URI** (the direct connection, not the pooler).
+  4. On the API host (Render, etc.) set `DATABASE_URL` to that string. Persistence switches from SQLite to Postgres automatically — no code change, no redeploy of the web app needed.
+  5. Verify: `curl https://<api>/api/health` → `"persistence":"postgresql"`.
+  Run the alert engine as a single writer regardless of backend.
 - MQTT: TLS + per-device credentials/client certificates; provision device keys (secure element / provisioning service).
 - Real dissemination needs agreements with SMS/voice providers and the national alerting authority for CAP/SACHET; none is implemented.
 - Model deployment stays behind human approval (`model_registry.approved_by`).

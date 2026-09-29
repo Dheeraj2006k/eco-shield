@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 from app.engine import Engine  # noqa: E402
 from app.main import app, engine  # noqa: E402
-from app.storage import Storage, persist, restore  # noqa: E402
+from app.storage import PgStorage, Storage, open_store, persist, restore  # noqa: E402
 
 
 def token(role: str, name: str = "tester") -> dict:
@@ -143,3 +143,64 @@ def test_websocket_requires_token():
     t = token("VIEWER")["Authorization"].split()[1]
     with client.websocket_connect(f"/ws/state?token={t}"):
         pass
+
+
+def test_open_store_picks_sqlite_without_database_url(tmp_path):
+    st = open_store(None, str(tmp_path / "x.db"))
+    assert isinstance(st, Storage)
+    st.close()
+
+
+def test_open_store_memory_disables_persistence():
+    assert open_store(None, ":memory:") is None
+
+
+def test_open_store_falls_back_to_sqlite_on_bad_dsn(tmp_path):
+    # An unreachable/invalid DATABASE_URL must never crash the API — it falls back to SQLite.
+    st = open_store("postgresql://nouser:nopass@127.0.0.1:1/doesnotexist", str(tmp_path / "fallback.db"))
+    assert isinstance(st, Storage)
+    st.close()
+
+
+@pytest.mark.skipif(not os.environ.get("IRIS_TEST_DATABASE_URL"), reason="set IRIS_TEST_DATABASE_URL to run against a real Postgres/Supabase instance")
+def test_pg_storage_round_trip_against_real_database():
+    """Run this against your own Supabase project before relying on it:
+        IRIS_TEST_DATABASE_URL="postgresql://postgres:<password>@<host>:5432/postgres" python -m pytest -k pg_storage -v
+    It creates the schema (if missing), writes/reads/updates a row per kind, then cleans up after itself.
+    """
+    dsn = os.environ["IRIS_TEST_DATABASE_URL"]
+    st = PgStorage(dsn)
+    try:
+        now = time.time() * 1000
+        inc = {"id": "INC-TEST-1", "key": "TEST:pytest", "event_ids": ["EVT-TEST-1"], "hazard": "FLOOD", "severity": "WATCH", "peak_severity": "WATCH", "confidence": 0.4, "confidence_level": "LOW", "state": "WATCH", "location": "pytest", "district": "pytest", "lat": 0.0, "lon": 0.0, "node_ids": ["HYD-001"], "primary_node_id": "HYD-001", "status": "ACTIVE", "recommended_action": "n/a", "created_at": now, "updated_at": now, "acknowledged_at": None, "acknowledged_by": None, "resolved_at": None, "detections": 1, "duplicates_suppressed": 0, "history": [{"at": now, "state": "WATCH", "note": "pytest"}], "fusion": {"E": 0.4}, "dissemination": {"channels": []}, "simulated": True}
+        assert st.save_changed("incident", [inc], "id") == 1
+        assert st.save_changed("incident", [inc], "id") == 0  # unchanged -> no write
+        loaded = st.load("incident")
+        assert any(i["id"] == "INC-TEST-1" and i["hazard"] == "FLOOD" and i["fusion"]["E"] == 0.4 for i in loaded)
+
+        tkt = {"ticket_id": "MT-TEST-1", "node_id": "HYD-001", "issue": "pytest ticket", "category": "OTHER", "priority": "LOW", "assigned_to": "pytest", "status": "OPEN", "created_at": now, "resolved_at": None, "service_history": [{"at": now, "action": "created", "by": "pytest"}]}
+        assert st.save_changed("ticket", [tkt], "ticket_id") == 1
+        assert any(t["ticket_id"] == "MT-TEST-1" for t in st.load("ticket"))
+
+        evt = {"id": "EVT-TEST-1", "node_id": "HYD-001", "hazard": "FLOOD", "timestamp": now, "severity": "WATCH", "confidence": 0.4, "evidence": [], "sensor_health": {}, "model_versions": {}}
+        assert st.save_changed("event", [evt], "id") == 1
+        assert any(e["id"] == "EVT-TEST-1" for e in st.load("event"))
+    finally:
+        with st.conn.cursor() as cur:
+            cur.execute("DELETE FROM incidents WHERE id = %s", ("INC-TEST-1",))
+            cur.execute("DELETE FROM maintenance_tickets WHERE ticket_id = %s", ("MT-TEST-1",))
+            cur.execute("DELETE FROM events WHERE id = %s", ("EVT-TEST-1",))
+        st.conn.commit()
+        st.close()
+
+
+def test_health_reports_actual_backend_not_just_env_var(monkeypatch, tmp_path):
+    """/api/health must reflect what `store` actually is, not just whether DATABASE_URL is set
+    (a bad DATABASE_URL falls back to SQLite silently — the status must say so, not claim postgresql)."""
+    import app.main as main_module
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://nouser:nopass@127.0.0.1:1/doesnotexist")
+    monkeypatch.setattr(main_module, "store", Storage(str(tmp_path / "x.db")))
+    assert client.get("/api/health").json()["persistence"] == "sqlite"
+    monkeypatch.setattr(main_module, "store", None)
+    assert client.get("/api/health").json()["persistence"] == "off"

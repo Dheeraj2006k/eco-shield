@@ -16,4 +16,6 @@ services:
       - key: IRIS_AUTH_REQUIRED
         value: "true"
       - key: IRIS_DB_PATH
-        value: /tmp/iris_state.db  # use /data/iris_state.db with a persistent disk
+        value: /tmp/iris_state.db  # used only if DATABASE_URL is not set
+      - key: DATABASE_URL       # Supabase connection string — recommended over the disk above
+        sync: false

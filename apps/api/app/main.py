@@ -17,11 +17,11 @@ from pydantic import BaseModel
 from .engine import TICK_S, TH, Engine
 from .models import AckRequest, Incident, Maintenance, Node, Telemetry, TicketCreate
 from .security import User, auth_required, decode, require
-from .storage import Storage, persist, restore
+from .storage import DocStore, open_store, persist, restore
 
 log = logging.getLogger("iris.api")
 engine = Engine()
-store: Storage | None = None
+store: DocStore | None = None
 
 
 class Hub:
@@ -75,11 +75,12 @@ async def loop() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global store
+    db_url = os.environ.get("DATABASE_URL")
     path = os.environ.get("IRIS_DB_PATH", "iris_state.db")
-    if path != ":memory:":
-        store = Storage(path)
+    store = open_store(db_url, path)
+    if store:
         counts = restore(engine, store)
-        log.warning("restored from %s: %s", path, counts)
+        log.warning("restored from %s: %s", "PostgreSQL (DATABASE_URL)" if db_url else path, counts)
     tasks = [asyncio.create_task(loop())]
     if os.environ.get("IRIS_MQTT_ENABLED", "false").lower() == "true":
         from .mqtt_bridge import run_bridge
@@ -105,7 +106,10 @@ app.add_middleware(
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "service": "eco-shield-api", "data": "SIMULATED", "auth_required": auth_required(), "tick": engine.tick_n, "persistence": store.path if store else "off"}
+    from .storage import PgStorage, Storage
+
+    backend = "postgresql" if isinstance(store, PgStorage) else "sqlite" if isinstance(store, Storage) else "off"
+    return {"status": "ok", "service": "eco-shield-api", "data": "SIMULATED", "auth_required": auth_required(), "tick": engine.tick_n, "persistence": backend}
 
 
 # ------------------------------------------------------------------ state for the web UI (remote mode)

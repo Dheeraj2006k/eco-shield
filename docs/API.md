@@ -68,3 +68,23 @@ Connect with `?token=<JWT>` (or the session cookie). Unauthenticated connections
 ## Web-app token endpoint
 
 `GET /api/backend-token` (Next.js, needs the session cookie) returns `{"token","expires_in":900}` — a 15-minute HS256 bearer token for calling this API from the browser. Note: WebSocket URLs carry the token as a query parameter, so it can appear in server access logs; it is short-lived, but a production deployment should move it to a subprotocol header or a one-time ticket.
+
+## Persistence
+
+Incidents, tickets and events are written after every engine tick and reloaded on startup.
+
+- **Default:** SQLite at `IRIS_DB_PATH` (one JSON document per row).
+- **PostgreSQL / Supabase:** set `DATABASE_URL` to a Postgres connection string. The API writes to typed
+  tables (`incidents`, `maintenance_tickets`, `events`) — see `infrastructure/database/supabase.sql`, which
+  the API also runs itself on startup (idempotent), so a fresh database works even without pasting it
+  first. Use Supabase's *direct* connection string (Project Settings → Database → Connection string →
+  URI), not the pooler — the API holds one long-lived connection, and not the anon/REST key, since this
+  is a plain `psycopg` connection (Row Level Security does not apply here).
+- Nodes, sensors, gateways and telemetry are **never persisted** — they are pure in-memory simulation
+  state and are regenerated fresh on every API restart, in both backends.
+
+Test against a real Supabase project before relying on it:
+
+```bash
+IRIS_TEST_DATABASE_URL="postgresql://postgres:<password>@<host>:5432/postgres" python -m pytest -k pg_storage -v
+```

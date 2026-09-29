@@ -51,7 +51,7 @@ cd services/ml && python train.py --web-out ../../apps/web/src/data/model-regist
 Tests:
 
 ```bash
-cd apps/api && python -m pytest          # 10 API tests (auth, RBAC, dedup, suppression, outage queueing, tickets, maintenance mode, snapshot shape, persistence, websocket auth)
+cd apps/api && python -m pytest          # 13 API tests (auth, RBAC, dedup, suppression, outage queueing, tickets, maintenance mode, snapshot shape, persistence, websocket auth)
 cd services/ml && python -m pytest       # fusion / quorum / CUSUM tests
 cd apps/web && npx tsc --noEmit && npx tsx scripts/engine-test.ts   # typecheck + headless engine scenarios
 # API/UI parity: dump a snapshot (see scripts/parity.ts header) then: npx tsx scripts/parity.ts
@@ -67,7 +67,8 @@ See `.env.example`. Nothing secret is committed; `.env*` files are git-ignored.
 | `IRIS_USERS` | web | `user\|ROLE\|password,...` (demo-grade credential store) |
 | `NEXT_PUBLIC_API_URL` | web | Backend URL; enables the *Backend API* data source |
 | `NEXT_PUBLIC_DEFAULT_SOURCE` | web | `remote` to start on the backend (default: local engine) |
-| `IRIS_DB_PATH` | api | SQLite file for persisted incidents/tickets (`:memory:` disables) |
+| `IRIS_DB_PATH` | api | SQLite file for persisted incidents/tickets (`:memory:` disables); ignored if `DATABASE_URL` is set |
+| `DATABASE_URL` | api | Postgres connection string (e.g. Supabase) — takes priority over `IRIS_DB_PATH` |
 | `IRIS_AUTH_REQUIRED` | api | `false` only for local dev; defaults to `true` |
 | `IRIS_CORS_ORIGINS` | api | Allowed web origins |
 | `IRIS_MQTT_ENABLED/HOST/USER/PASSWORD` | api, simulation | Optional MQTT ingestion |
@@ -88,11 +89,11 @@ Routes are enforced in Next.js middleware, write actions are gated in the UI and
 The UI can run against either source (Settings → *Data mode*, or `NEXT_PUBLIC_DEFAULT_SOURCE=remote`):
 
 - **Local demo engine (default)** — the simulation runs in the browser (`apps/web/src/lib/engine`). No backend needed; works on Vercel with no other service. State lives in memory and resets on reload.
-- **Backend API** — the FastAPI engine (`apps/api`) runs the same simulation server-side. The UI loads `/api/snapshot`, then follows `/ws/state`; every action (scenarios, acknowledge, tickets, maintenance mode) is a REST call re-checked against the caller's role. Incidents, tickets and events are persisted to SQLite (`IRIS_DB_PATH`) and survive API restarts. The web app mints a 15-minute bearer token at `/api/backend-token` for the cross-origin calls.
+- **Backend API** — the FastAPI engine (`apps/api`) runs the same simulation server-side. The UI loads `/api/snapshot`, then follows `/ws/state`; every action (scenarios, acknowledge, tickets, maintenance mode) is a REST call re-checked against the caller's role. Incidents, tickets and events are persisted — to SQLite (`IRIS_DB_PATH`) by default, or to PostgreSQL/Supabase when `DATABASE_URL` is set (see `infrastructure/database/supabase.sql`) — and survive API restarts. The web app mints a 15-minute bearer token at `/api/backend-token` for the cross-origin calls.
 
 The Python and TypeScript engines are kept in step: `apps/web/scripts/parity.ts` checks that the API snapshot has exactly the shape the UI expects.
 
-Still true: all data is simulated; SMS/voice/CAP-SACHET dispatch, LoRaWAN and camera inference are simulated flows; vision models are not trained; the PostgreSQL/TimescaleDB schema is provided but the API persists to SQLite for now; Docker files are untested (no Docker in the authoring environment).
+Still true: all data is simulated; SMS/voice/CAP-SACHET dispatch, LoRaWAN and camera inference are simulated flows; vision models are not trained; nodes/sensors/telemetry are never persisted (pure in-memory simulation); Docker files are untested (no Docker in the authoring environment); the PgStorage path is unit-tested but was not exercised against a live Supabase project in the authoring environment (see "Testing against Supabase" below).
 
 ## Demo
 
